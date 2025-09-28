@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <title>CryptoEdu</title>
+    <link rel="stylesheet" href="/css/style.css">
+
+</head>
+<body>
+<h2>Pytania quizowe</h2>
+<a href="/admin/questions/new">Dodaj pytanie</a>
+<ul>
+    <% questions.forEach(q => { %>
+        <li>
+            <%= q.QUESTION_TEXT || q.question_text %> —
+            <a href="/admin/questions/edit/<%= q.ID || q.id %>">Edytuj</a>
+            <form style="display:inline" method="post" action="/admin/questions/delete/<%= q.ID || q.id %>">
+                <button type="submit" onclick="return confirm('Usunąć?')">Usuń</button>
+            </form>
+        </li>
+    <% }) %>
+</ul>
+</body>
+</html>

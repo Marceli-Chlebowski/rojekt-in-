@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <title>CryptoEdu</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+<h2>Artykuły</h2>
+<a href="/admin/articles/new">Dodaj nowy artykuł</a>
+<ul>
+    <% articles.forEach(a => { %>
+        <li>
+            <%= a.TITLE || a.title %> —
+            <a href="/admin/articles/edit/<%= a.ID || a.id %>">Edytuj</a>
+            <form style="display:inline" method="post" action="/admin/articles/delete/<%= a.ID || a.id %>">
+                <button type="submit" onclick="return confirm('Usunąć?')">Usuń</button>
+            </form>
+        </li>
+    <% }) %>
+</ul>
+</body>
+</html>

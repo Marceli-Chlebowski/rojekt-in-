@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <title>CryptoEdu</title>
+    <link rel="stylesheet" href="/css/style.css">
+
+</head>
+<body>
+<h2>Nowe pytanie</h2>
+<form method="post" action="/admin/questions">
+    <textarea name="question_text" placeholder="Treść pytania" required></textarea><br/>
+    <input name="opt_a" placeholder="Opcja A" required/><br/>
+    <input name="opt_b" placeholder="Opcja B" required/><br/>
+    <input name="opt_c" placeholder="Opcja C" required/><br/>
+    <input name="opt_d" placeholder="Opcja D" required/><br/>
+    <input name="correct_opt" placeholder="Poprawna (A/B/C/D)" required/><br/>
+    <input name="difficulty" placeholder="Poziom (BASIC/MEDIUM/ADV)" /><br/>
+    <button type="submit">Dodaj</button>
+</form>
+</body>
+</html>

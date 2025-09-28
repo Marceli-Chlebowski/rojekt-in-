@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <title>CryptoEdu</title>
+    <link rel="stylesheet" href="/css/style.css">
+
+</head>
+<body>
+<h2>Quiz (10 pytań)</h2>
+<form id="quizForm" method="post" action="/quiz/submit">
+    <% questions.forEach((q, idx) => { %>
+        <div class="question">
+            <p><strong><%= idx+1 %>. </strong><%= q.question_text %></p>
+            <% q.options.forEach(opt => { %>
+                <label>
+                    <input type="radio" name="q_<%= q.id %>" value="<%= opt.key %>" required/>
+                    <%= opt.key %>: <%= opt.text %>
+                </label><br/>
+            <% }) %>
+        </div>
+        <hr/>
+    <% }) %>
+    <button type="submit">Zakończ i sprawdź wynik</button>
+</form>
+</body>
+</html>

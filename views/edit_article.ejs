@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <title>CryptoEdu</title>
+    <link rel="stylesheet" href="/css/style.css">
+
+</head>
+<body>
+<h2>Edytuj artykuł</h2>
+<form method="post" action="/admin/articles/update/<%= article.ID || article.id %>">
+    <input name="title" value="<%= article.TITLE || article.title %>" required/><br/>
+    <textarea name="summary"><%= article.SUMMARY || article.summary %></textarea><br/>
+    <textarea name="content" rows="8"><%= article.CONTENT || article.content %></textarea><br/>
+    <button type="submit">Zapisz</button>
+</form>
+</body>
+</html>

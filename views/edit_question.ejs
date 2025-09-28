@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <title>CryptoEdu</title>
+    <link rel="stylesheet" href="/css/style.css">
+
+</head>
+<body>
+<h2>Edytuj pytanie</h2>
+<form method="post" action="/admin/questions/update/<%= q.ID || q.id %>">
+    <textarea name="question_text" required><%= q.QUESTION_TEXT || q.question_text %></textarea><br/>
+    <input name="opt_a" value="<%= q.OPT_A || q.opt_a %>" required/><br/>
+    <input name="opt_b" value="<%= q.OPT_B || q.opt_b %>" required/><br/>
+    <input name="opt_c" value="<%= q.OPT_C || q.opt_c %>" required/><br/>
+    <input name="opt_d" value="<%= q.OPT_D || q.opt_d %>" required/><br/>
+    <input name="correct_opt" value="<%= q.CORRECT_OPT || q.correct_opt %>" required/><br/>
+    <input name="difficulty" value="<%= q.DIFFICULTY || q.difficulty %>" /><br/>
+    <button type="submit">Zapisz</button>
+</form>
+</body>
+</html>
