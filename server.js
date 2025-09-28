@@ -54,65 +54,59 @@ app.use('/admin', adminRoutes);
 // Funkcja sleep, jeśli w przyszłości będzie potrzeba wielu żądań do API
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
 
-// helper do fetch z retry (obsługa 429 i innych błędów)
-const fetchWithRetry = async (url, opts = {}, retries = 4, defaultDelay = 2000) => {
+// helper do fetch z retry i exponential backoff (obsługa 429 i innych błędów)
+const fetchWithRetry = async (url, opts = {}, maxRetries = 4, initialDelay = 2000) => {
     let lastErr;
-    for (let i = 0; i < retries; i++) {
+    let delay = initialDelay;
+    for (let i = 0; i < maxRetries; i++) {
         try {
             return await axios.get(url, opts);
         } catch (err) {
             lastErr = err;
             const status = err?.response?.status;
-            if (status === 429 && i < retries - 1) {
+            if (status === 429 && i < maxRetries - 1) {
                 const ra = err.response.headers['retry-after'];
-                const wait = ra ? parseInt(ra, 10) * 1000 : defaultDelay;
-                console.warn(`429 otrzymane — czekam ${wait}ms przed retry (${i + 1}/${retries})`);
-                await new Promise(r => setTimeout(r, wait));
+                const wait = ra ? parseInt(ra, 10) * 1000 : delay;
+                console.warn(`429 otrzymane — czekam ${wait}ms przed retry (${i + 1}/${maxRetries})`);
+                await sleep(wait);
+                delay *= 2; // exponential backoff
                 continue;
             }
-            // retry na inne błędy sieciowe (oprócz 4xx/5xx bez 429)? Można dodać warunek wg potrzeb
             break; // inne błędy - nie retry, tylko rzucamy
         }
     }
     throw lastErr;
 };
 
-// cache w pamięci
-let cryptoCache = { data: [], updatedAt: 0, ttlMs: 60 * 1000 };
+// cache w pamięci z TTL 2 minuty
+let cryptoCache = { data: [], updatedAt: 0, ttlMs: 2 * 60 * 1000 };
 
-// Funkcja pobierająca TOP 200 kryptowalut z CoinGecko (2x po 100, retry na każdej stronie)
+// Funkcja pobierająca TOP 100 kryptowalut z CoinGecko (1 żądanie)
 const fetchAllCryptos = async () => {
     const url = 'https://api.coingecko.com/api/v3/coins/markets';
-    const perPage = 100;
-    const optsBase = {
+    const opts = {
         params: {
             vs_currency: 'usd',
             order: 'market_cap_desc',
-            per_page: perPage,
+            per_page: 100,
+            page: 1,
             sparkline: false
         },
         timeout: 10000
     };
-    let all = [];
-    for (let page = 1; page <= 2; page++) {
-        const opts = {
-            ...optsBase,
-            params: { ...optsBase.params, page }
-        };
-        let res;
-        try {
-            res = await fetchWithRetry(url, opts, 4, 2000);
-        } catch (err) {
-            console.warn(`Błąd pobierania kryptowalut (strona ${page}):`, err.message || err);
-            throw err;
-        }
-        if (Array.isArray(res.data)) {
-            all = all.concat(res.data);
-        }
+    let res;
+    try {
+        res = await fetchWithRetry(url, opts, 4, 2000);
+    } catch (err) {
+        console.warn(`Błąd pobierania kryptowalut:`, err.message || err);
+        throw err;
     }
-    cryptoCache.data = all;
-    cryptoCache.updatedAt = Date.now();
-    return all;
+    if (Array.isArray(res.data)) {
+        cryptoCache.data = res.data;
+        cryptoCache.updatedAt = Date.now();
+        return res.data;
+    }
+    throw new Error('Nieprawidłowa odpowiedź API');
 };
 
 // Trasa szczegółów kryptowaluty z dynamicznym zakresem (days przez query, domyślnie 7)
@@ -152,7 +146,7 @@ app.get('/api/coin/:id/market_chart', async (req, res) => {
     }
 });
 
-// Odświeżaj cache co minutę
+// Odświeżaj cache co 2 minuty
 const refreshCryptoCache = async () => {
     return await fetchAllCryptos();
 };
@@ -163,9 +157,9 @@ setInterval(async () => {
     } catch (err) {
         console.warn('Nie udało się odświeżyć cache kryptowalut:', err.message || err);
     }
-}, 60 * 1000);
+}, cryptoCache.ttlMs);
 
-// trasa główna - paginacja, cache, retry, obsługa top 200 z cache
+// trasa główna - paginacja, cache, retry, obsługa top 100 z cache
 app.get('/', async (req, res) => {
     const page = parseInt(req.query.page) || 1;
     const perPage = 50;
@@ -177,7 +171,7 @@ app.get('/', async (req, res) => {
             await refreshCryptoCache();
         }
 
-        // Wyszukiwanie w top 200
+        // Wyszukiwanie w top 100
         let filteredCryptos = cryptoCache.data;
         if (search) {
             filteredCryptos = filteredCryptos.filter(c =>
