@@ -4,14 +4,46 @@
     <meta charset="UTF-8">
     <title>CryptoEdu</title>
     <link rel="stylesheet" href="/css/style.css">
-
 </head>
 <body>
-<h1>Witaj na CryptoEdu</h1>
-<p>Prototyp aplikacji edukacyjnej o kryptowalutach.</p>
-<ul>
-    <li><a href="/articles">Artykuły</a></li>
-    <li><a href="/quiz">Quiz</a></li>
-</ul>
+<header>
+    <h1>Witaj na CryptoEdu</h1>
+    <p>Prototyp aplikacji edukacyjnej o kryptowalutach.</p>
+</header>
+<form class="crypto-search" method="get" action="/">
+    <input type="text" name="search" placeholder="Wyszukaj kryptowalutę..." value="<%= typeof search !== 'undefined' ? search : '' %>">
+    <button type="submit">Szukaj</button>
+</form>
+
+<div class="crypto-list">
+    <% cryptos.forEach(crypto => { %>
+        <div class="crypto-card">
+            <a href="/crypto/<%= crypto.id %>">
+                <img src="<%= crypto.image %>" alt="<%= crypto.name %> logo">
+                <h3><%= crypto.name %> (<%= crypto.symbol.toUpperCase() %>)</h3>
+            </a>
+            <p>Cena: $<%= crypto.current_price.toLocaleString() %></p>
+            <p>Zmiana 24h:
+                <span class="<%= crypto.price_change_percentage_24h >= 0 ? 'up' : 'down' %>">
+                    <%= crypto.price_change_percentage_24h.toFixed(2) %>%
+                </span>
+            </p>
+        </div>
+    <% }) %>
+</div>
+
+<div class="pagination">
+    <% if(currentPage > 1) { %>
+        <a href="/?page=<%= currentPage - 1 %>">Poprzednia</a>
+    <% } %>
+
+    <% for(let i=1; i<=totalPages; i++) { %>
+        <a href="/?page=<%= i %>" class="<%= i === currentPage ? 'active' : '' %>"><%= i %></a>
+    <% } %>
+
+    <% if(currentPage < totalPages) { %>
+        <a href="/?page=<%= currentPage + 1 %>">Następna</a>
+    <% } %>
+</div>
 </body>
 </html>

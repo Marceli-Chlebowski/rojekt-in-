@@ -37,7 +37,7 @@ nav a:hover {
 
 /* Header */
 header {
-    color: #fff;
+    color: #262626;
     padding: 20px 40px;
     margin-bottom: 30px;
 }
@@ -120,4 +120,123 @@ a:hover {
     li {
         padding: 10px 15px;
     }
+}
+
+.crypto-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.crypto-card {
+    background-color: #fff;
+    padding: 10px;
+    border-radius: 8px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    font-size: 0.9em;
+    max-height: 100px;
+}
+
+.crypto-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.12);
+}
+
+.pagination {
+    margin-top: 20px;
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.pagination a {
+    padding: 5px 10px;
+    background-color: #f1f1f1;
+    border-radius: 5px;
+    text-decoration: none;
+    color: #333;
+}
+
+.pagination a.active {
+    background-color: #4a90e2;
+    color: #fff;
+}
+
+.crypto-card img {
+    width: 50px;
+    height: 50px;
+    object-fit: contain;
+    display: block;
+}
+
+.crypto-search {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.crypto-search input[type="text"] {
+    flex: 1;
+    padding: 8px 12px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 0.95em;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.crypto-search input[type="text"]:focus {
+    border-color: #4a90e2;
+    box-shadow: 0 0 5px rgba(74, 144, 226, 0.4);
+    outline: none;
+}
+
+.crypto-search button {
+    padding: 8px 16px;
+    background-color: #4a90e2;
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.2s ease, transform 0.2s ease;
+}
+
+.crypto-search button:hover {
+    background-color: #357ABD;
+    transform: translateY(-1px);
+}
+
+/* Szczegóły kryptowaluty */
+.crypto-details-container {
+    max-width: 700px;
+    margin: 40px auto 0 auto;
+    background: #fff;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    padding: 32px 24px 24px 24px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.crypto-info {
+    width: 100%;
+    margin-bottom: 30px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    font-size: 1.08em;
+    color: #2c3e50;
+}
+
+.crypto-chart {
+    width: 100%;
+    max-width: 600px;
+    height: 300px; /* stała wysokość */
+    margin: 0 auto;
+    display: block;
 }
