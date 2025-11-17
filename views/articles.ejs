@@ -4,18 +4,19 @@
     <meta charset="UTF-8">
     <title>CryptoEdu</title>
     <link rel="stylesheet" href="/css/style.css">
-
 </head>
 <body>
 <h2>Artykuły</h2>
-<ul>
+
+<div class="articles-grid">
     <% articles.forEach(a => { %>
-        <li>
-            <h3><%= a.TITLE || a.title %></h3>
-            <p><%= a.SUMMARY || a.summary %></p>
-            <small><%= a.CREATED_AT || a.created_at %></small>
-        </li>
+        <a href="/articles/<%= a.id %>" class="article-card">
+            <h3><%= a.title %></h3>
+            <small><%= new Date(a.created_at).toLocaleDateString() %></small>
+            <p><%= a.summary %></p>
+        </a>
     <% }) %>
-</ul>
+</div>
+
 </body>
 </html>

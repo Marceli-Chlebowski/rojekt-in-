@@ -38,9 +38,12 @@ app.get('/register', (req, res) => res.redirect('/auth/register'));
 app.use('/auth', require('./routes/auth'));
 app.use('/favorites', require('./routes/favorites'));
 
+// EDUKACJA: quizy i artykuły
+app.use('/quiz', require('./routes/quiz'));
+app.use('/articles', require('./routes/articles'));
+
 // Users
 app.use('/user', require('./routes/user'));
-
 
 // UWAGA: brak app.get('/') — główna trasa jest w server.js
 module.exports = app;

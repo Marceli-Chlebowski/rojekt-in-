@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <title>Wybierz quiz - CryptoEdu</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+<h2>Dostępne quizy</h2>
+
+<div class="quizzes-grid">
+    <% quizzes.forEach(q => { %>
+        <a href="/quiz/<%= q.id %>" class="quiz-card">
+            <h3><%= q.title %></h3>
+            <p><%= q.description %></p>
+        </a>
+    <% }) %>
+</div>
+
+<h2>Leaderboard</h2>
+<div class="leaderboard-list">
+    <% leaderboard.slice(0, 20).forEach((user, idx) => { %>
+        <div class="leaderboard-card">
+            <strong>Miejsce <%= idx + 1 %>: <%= user.username %></strong>
+            <p>Punkty: <%= user.total_score %></p>
+        </div>
+    <% }) %>
+</div>
+
+</body>
+</html>

@@ -11,4 +11,4 @@ const pool = mysql.createPool({
     namedPlaceholders: true
 });
 
-module.exports = pool;
+module.exports = pool; // tylko pool

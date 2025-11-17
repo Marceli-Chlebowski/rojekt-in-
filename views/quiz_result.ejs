@@ -2,38 +2,43 @@
 <html lang="pl">
 <head>
     <meta charset="UTF-8">
-    <title>CryptoEdu</title>
+    <title>Wynik quizu - CryptoEdu</title>
     <link rel="stylesheet" href="/css/style.css">
-
 </head>
 <body>
-<h2>Wynik quizu</h2>
-<p>Twój wynik: <strong><%= score %></strong> / <strong><%= total %></strong></p>
+<header>
+    <h2>Wynik quizu</h2>
+</header>
 
-<h3>Szczegóły</h3>
-<ul>
-    <% breakdown.forEach((b, idx) => { %>
-        <li>
-            <strong>Pytanie <%= idx+1 %>:</strong> <%= b.question || ('id ' + b.id) %><br/>
-            Twoja odpowiedź: <%= b.selected || '—' %>
-            <% if (b.isCorrect) { %>
-                <span style="color:green">✔</span>
-            <% } else { %>
-                <span style="color:red">✖ (poprawna: <%= b.correct %>)</span>
-            <% } %>
-            <div>
-                <small>Opcje:</small>
-                <ul>
-                    <li>A: <%= b.options.A %></li>
-                    <li>B: <%= b.options.B %></li>
-                    <li>C: <%= b.options.C %></li>
-                    <li>D: <%= b.options.D %></li>
-                </ul>
-            </div>
-        </li>
-    <% }) %>
-</ul>
+<main>
+    <p>Twój wynik: <strong><%= score %></strong> / <strong><%= total %></strong> (Punkty: <%= points %>)</p>
 
-<a href="/quiz">Zagraj ponownie</a>
+    <h3>Szczegóły</h3>
+    <ul class="breakdown">
+        <% breakdown.forEach((b, idx) => { %>
+            <li>
+                <strong>Pytanie <%= idx+1 %>:</strong> <%= b.question || ('id ' + b.id) %><br/>
+                Twoja odpowiedź: <%= b.selected || '—' %>
+                <% if (b.isCorrect) { %>
+                    <span class="correct">✔</span>
+                <% } else { %>
+                    <span class="wrong">✖ (poprawna: <%= b.correct %>)</span>
+                <% } %>
+                <div class="options">
+                    <small>Opcje:</small>
+                    <ul>
+                        <li>A: <%= b.options.A %></li>
+                        <li>B: <%= b.options.B %></li>
+                        <li>C: <%= b.options.C %></li>
+                        <li>D: <%= b.options.D %></li>
+                    </ul>
+                </div>
+            </li>
+        <% }) %>
+    </ul>
+
+    <a href="/quiz" class="play-again">Zagraj ponownie</a>
+</main>
+
 </body>
 </html>

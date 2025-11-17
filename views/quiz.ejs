@@ -2,26 +2,33 @@
 <html lang="pl">
 <head>
     <meta charset="UTF-8">
-    <title>CryptoEdu</title>
+    <title><%= quiz.title %> - CryptoEdu</title>
     <link rel="stylesheet" href="/css/style.css">
-
 </head>
 <body>
-<h2>Quiz (10 pytań)</h2>
-<form id="quizForm" method="post" action="/quiz/submit">
-    <% questions.forEach((q, idx) => { %>
-        <div class="question">
-            <p><strong><%= idx+1 %>. </strong><%= q.question_text %></p>
-            <% q.options.forEach(opt => { %>
-                <label>
-                    <input type="radio" name="q_<%= q.id %>" value="<%= opt.key %>" required/>
-                    <%= opt.key %>: <%= opt.text %>
-                </label><br/>
-            <% }) %>
-        </div>
-        <hr/>
-    <% }) %>
-    <button type="submit">Zakończ i sprawdź wynik</button>
-</form>
+<header>
+    <h1>Quiz: <%= quiz.title %></h1>
+</header>
+
+<main>
+    <form action="/quiz/<%= quiz.id %>/submit" method="POST" class="quiz-form">
+        <% questions.forEach((q, idx) => { %>
+            <div class="question">
+                <p><strong><%= idx + 1 %>. <%= q.question_text %></strong></p>
+                <% q.options.forEach(opt => { %>
+                    <label>
+                        <input type="radio" name="q_<%= q.id %>" value="<%= opt.key %>">
+                        <%= opt.key %>. <%= opt.text %>
+                    </label><br>
+                <% }) %>
+            </div>
+        <% }) %>
+        <button type="submit" class="submit-btn">Sprawdź odpowiedzi</button>
+    </form>
+</main>
+
+<footer>
+    <p><a href="/quiz">Wróć do listy quizów</a></p>
+</footer>
 </body>
 </html>

@@ -1,101 +1,114 @@
-// routes/quiz.js
 const express = require('express');
 const router = express.Router();
-const { simpleExecute } = require('../config/db');
+const pool = require('../config/db');
 
-// helper: ensure logged in (optional — allow anonymous too)
-function ensureLoggedIn(req, res, next) {
-    if (req.session && req.session.user) return next();
-    // allow anonymous but set userId = null
-    return next();
-}
-
-// GET /quiz - ładuje 10 pytań
+// lista wszystkich quizów
 router.get('/', async (req, res) => {
     try {
-        const result = await simpleExecute(
-            `SELECT id, question_text, opt_a, opt_b, opt_c, opt_d 
-       FROM quiz_questions
-       WHERE ROWNUM <= 10
-       ORDER BY DBMS_RANDOM.VALUE`
-        );
-        const questions = (result.rows || []).map(q => ({
-            id: q.ID,
-            question_text: q.QUESTION_TEXT,
-            options: [
-                { key: 'A', text: q.OPT_A },
-                { key: 'B', text: q.OPT_B },
-                { key: 'C', text: q.OPT_C },
-                { key: 'D', text: q.OPT_D }
-            ]
-        }));
-        res.render('quiz', { questions });
+        const [quizzes] = await pool.execute('SELECT id, title, description FROM quizzes');
+
+        // Pobierz leaderboard - top 20 użytkowników z najwyższymi sumarycznymi wynikami
+        const [leaderboard] = await pool.execute(`
+            SELECT u.username, SUM(qr.score) AS total_score
+            FROM quiz_results qr
+            JOIN users u ON qr.user_id = u.id
+            GROUP BY u.id, u.username
+            ORDER BY total_score DESC
+            LIMIT 20
+        `);
+
+        res.render('quizzes', { quizzes, leaderboard });
     } catch (err) {
         console.error(err);
-        req.flash('error', 'Błąd quizu');
+        req.flash('error', 'Błąd pobierania quizów');
         res.redirect('/');
     }
 });
 
-// POST /quiz/submit - ocena odpowiedzi
-router.post('/submit', async (req, res) => {
+// GET /quiz/:id - pobierz pytania do wybranego quizu
+router.get('/:id', async (req, res) => {
     try {
-        // req.body zawiera pola q_<id> = 'A'|'B'|...
+        const quizId = req.params.id;
+        const [[quiz]] = await pool.execute('SELECT id, title FROM quizzes WHERE id = ?', [quizId]);
+        if (!quiz) {
+            req.flash('error', 'Nie znaleziono quizu');
+            return res.redirect('/quiz');
+        }
+
+        const [questions] = await pool.execute(
+            'SELECT id, question_text, opt_a, opt_b, opt_c, opt_d FROM quiz_questions WHERE quiz_id = ? ORDER BY RAND() LIMIT 10',
+            [quizId]
+        );
+
+        const formatted = questions.map(q => ({
+            id: q.id,
+            question_text: q.question_text,
+            options: [
+                { key: 'A', text: q.opt_a },
+                { key: 'B', text: q.opt_b },
+                { key: 'C', text: q.opt_c },
+                { key: 'D', text: q.opt_d }
+            ]
+        }));
+
+        res.render('quiz', { quiz, questions: formatted });
+    } catch (err) {
+        console.error(err);
+        req.flash('error', 'Błąd pobierania pytań');
+        res.redirect('/quiz');
+    }
+});
+
+// POST /quiz/:id/submit - ocena odpowiedzi
+router.post('/:id/submit', async (req, res) => {
+    try {
+        const quizId = req.params.id;
         const answers = Object.keys(req.body)
             .filter(k => k.startsWith('q_'))
-            .map(k => ({ id: parseInt(k.slice(2), 10), ans: req.body[k] }));
+            .map(k => ({ id: parseInt(k.slice(2)), ans: req.body[k] }));
 
-        if (answers.length === 0) {
+        if (!answers.length) {
             req.flash('error', 'Brak odpowiedzi');
-            return res.redirect('/quiz');
+            return res.redirect(`/quiz/${quizId}`);
         }
 
         let correctCount = 0;
         const breakdown = [];
 
-        // dla prostoty: pętlowo pobieramy poprawne odpowiedzi (można optymalizować batch)
-        for (const item of answers) {
-            const qres = await simpleExecute(
-                `SELECT correct_opt, question_text, opt_a, opt_b, opt_c, opt_d
-         FROM quiz_questions WHERE id = :id`, [item.id]
+        for (const a of answers) {
+            const [rows] = await pool.execute(
+                'SELECT correct_opt, question_text, opt_a, opt_b, opt_c, opt_d FROM quiz_questions WHERE id = ?',
+                [a.id]
             );
+            const row = rows[0];
+            if (!row) continue;
 
-            if (!qres.rows || qres.rows.length === 0) {
-                // pomiń brakujące
-                breakdown.push({ id: item.id, status: 'missing' });
-                continue;
-            }
-
-            const row = qres.rows[0];
-            const correct = (row.CORRECT_OPT || row.correct_opt || '').toUpperCase();
-            const isCorrect = (item.ans || '').toUpperCase() === correct;
+            const correct = (row.correct_opt || '').toUpperCase();
+            const isCorrect = (a.ans || '').toUpperCase() === correct;
             if (isCorrect) correctCount++;
+
             breakdown.push({
-                id: item.id,
-                question: row.QUESTION_TEXT || row.question_text,
-                selected: item.ans,
+                id: a.id,
+                question: row.question_text,
+                selected: a.ans,
                 correct,
                 isCorrect,
-                options: {
-                    A: row.OPT_A, B: row.OPT_B, C: row.OPT_C, D: row.OPT_D
-                }
+                options: { A: row.opt_a, B: row.opt_b, C: row.opt_c, D: row.opt_d }
             });
         }
 
-        const total = answers.length;
-        // zapisz wynik w quiz_results (jeżeli chcesz)
-        const userId = (req.session && req.session.user) ? req.session.user.id : null;
-        await simpleExecute(
-            `INSERT INTO quiz_results (id, user_id, score, total, created_at)
-       VALUES (quiz_results_seq.NEXTVAL, :uid, :score, :total, SYSDATE)`,
-            [userId, correctCount, total]
+        const userId = req.session?.user?.id || null;
+        const points = correctCount * 100; // 100 punktów za każdą poprawną odpowiedź
+        await pool.execute(
+            'INSERT INTO quiz_results (user_id, quiz_id, score, total, created_at) VALUES (?, ?, ?, ?, NOW())',
+            [userId, quizId, points, answers.length]
         );
 
-        res.render('quiz_result', { score: correctCount, total, breakdown });
+        res.render('quiz_result', { score: correctCount, total: answers.length, points, breakdown });
     } catch (err) {
         console.error(err);
         req.flash('error', 'Błąd podczas oceniania quizu');
-        res.redirect('/quiz');
+        res.redirect(`/quiz/${req.params.id}`);
     }
 });
 

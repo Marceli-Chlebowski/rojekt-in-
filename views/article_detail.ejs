@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <title><%= article.title %> - CryptoEdu</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+<header>
+    <h1><%= article.title %></h1>
+    <small>Opublikowano: <%= new Date(article.created_at).toLocaleDateString() %></small>
+</header>
+<main>
+    <p><%= article.content %></p>
+    <a href="/articles" class="btn">Powrót do listy artykułów</a>
+</main>
+</body>
+</html>
