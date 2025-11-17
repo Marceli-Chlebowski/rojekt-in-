@@ -1,106 +1,126 @@
-<!DOCTYPE html>
-<html lang="pl">
-<head>
-    <meta charset="UTF-8">
-    <title>CryptoEdu</title>
-    <link rel="stylesheet" href="/css/style.css">
-    <style>
-        #priceChart {
-            width: 100%;
-            max-width: 100%;
-            height: 300px;
-            min-height: 300px;
-            max-height: 300px;
-            display: block;
-            box-sizing: border-box;
-        }
-        @media (max-width: 600px) {
-            #priceChart {
-                height: 220px;
-                min-height: 220px;
-                max-height: 220px;
-            }
-        }
-        .chart-controls {
-            margin-bottom: 15px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            font-size: 16px;
-        }
-        #timeRange {
-            padding: 4px 8px;
-            font-size: 14px;
-        }
-    </style>
-</head>
-<body>
-<h2><%= coin?.name || 'N/A' %> (<%= coin?.symbol?.toUpperCase() || 'N/A' %>)</h2>
-<p>Aktualna cena: $<%= coin?.market_data?.current_price?.usd !== undefined ? coin.market_data.current_price.usd : 'N/A' %></p>
-<p>Kapitalizacja: $<%= coin?.market_data?.market_cap?.usd !== undefined ? coin.market_data.market_cap.usd : 'N/A' %></p>
-<div class="chart-controls">
-    <label for="timeRange">Przedział czasowy:</label>
-    <select id="timeRange">
-        <option value="7" <%= chartDays == 7 ? 'selected' : '' %>>7 dni</option>
-        <option value="30" <%= chartDays == 30 ? 'selected' : '' %>>30 dni</option>
-        <option value="90" <%= chartDays == 90 ? 'selected' : '' %>>90 dni</option>
-        <option value="180" <%= chartDays == 180 ? 'selected' : '' %>>180 dni</option>
-        <option value="365" <%= chartDays == 365 ? 'selected' : '' %>>1 rok</option>
-    </select>
-</div>
+<main>
+    <div class="coin-header">
+        <img src="<%= coin.image.large %>" alt="<%= coin.name %> logo">
+        <div>
+            <h1 style="margin:0; font-size:28px;"><%= coin.name %> (<%= coin.symbol.toUpperCase() %>)</h1>
+            <div class="coin-meta">
+                Aktualna cena: $<%= coin.market_data?.current_price?.usd?.toLocaleString() %>
+                <% if (typeof coin.market_data?.price_change_percentage_24h === 'number') { %>
+                    <span class="<%= coin.market_data.price_change_percentage_24h >= 0 ? 'up' : 'down' %>">
+            (<%= coin.market_data.price_change_percentage_24h.toFixed(2) %>%)
+          </span>
+                <% } %>
+            </div>
+        </div>
+    </div>
 
-<canvas id="priceChart" style="height: 300px;"></canvas>
+    <div class="chart-card">
+        <h3 style="margin:0 0 12px;">Wykres (ostatnie <%= chartDays %> dni)</h3>
+        <canvas id="priceChart" height="220"></canvas>
+    </div>
 
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <div class="card" style="margin-top:20px;">
+        <h2>Opis</h2>
+        <% if (coin.description?.pl) { %>
+            <p style="line-height:1.6;"><%= coin.description.pl.replace(/<[^>]+>/g, '') %></p>
+        <% } else if (coin.description?.en) { %>
+            <p style="line-height:1.6;"><%= coin.description.en.replace(/<[^>]+>/g, '') %></p>
+        <% } else { %>
+            <p class="muted">Brak opisu w bazie CoinGecko.</p>
+        <% } %>
+    </div>
+
+    <div class="card" style="margin-top:20px;">
+        <h2>Informacje rynkowe</h2>
+        <ul style="list-style:none; padding:0; margin:0;">
+            <li><strong>Ranking rynkowy:</strong> <%= coin.market_cap_rank || '—' %></li>
+            <li><strong>Kapitalizacja rynkowa:</strong> $<%= coin.market_data?.market_cap?.usd?.toLocaleString() || '—' %></li>
+            <li><strong>Wolumen 24h:</strong> $<%= coin.market_data?.total_volume?.usd?.toLocaleString() || '—' %></li>
+            <li><strong>Najwyższa cena 24h:</strong> $<%= coin.market_data?.high_24h?.usd?.toLocaleString() || '—' %></li>
+            <li><strong>Najniższa cena 24h:</strong> $<%= coin.market_data?.low_24h?.usd?.toLocaleString() || '—' %></li>
+            <li><strong>Strona projektu:</strong>
+                <% if (coin.links?.homepage?.[0]) { %>
+                    <a href="<%= coin.links.homepage[0] %>" target="_blank"><%= coin.links.homepage[0] %></a>
+                <% } else { %>
+                    <span class="muted">Brak</span>
+                <% } %>
+            </li>
+        </ul>
+    </div>
+</main>
+
 <script>
-let priceChartInstance = null;
-const ctx = document.getElementById('priceChart').getContext('2d');
+    // 1) Dynamicznie ładujemy Chart.js
+    (function loadChartAndRender() {
+        const s = document.createElement('script');
+        s.src = "https://cdn.jsdelivr.net/npm/chart.js";
+        s.onload = renderChart;
+        s.onerror = () => console.error('Nie udało się załadować Chart.js');
+        document.body.appendChild(s);
+    })();
 
-async function fetchChartData(days) {
-    try {
-        const res = await fetch(`/api/coin/<%= coin.id %>/market_chart?days=${days}`);
-        const chartData = await res.json();
+    async function renderChart() {
+        try {
+            // 2) Pobieramy dane wykresu (AJAX do Twojego endpointu)
+            const res = await fetch(`/api/coin/<%= coin.id %>/market_chart?days=<%= chartDays %>`);
+            const { prices } = await res.json(); // [['ts','price'], ...] z CoinGecko
 
-        const labels = chartData.prices.map(p => new Date(p[0]).toLocaleDateString('pl-PL'));
-        const data = chartData.prices.map(p => p[1]);
+            // 3) Budujemy etykiety (kategorie) i serię
+            const labels = prices.map(p => {
+                const d = new Date(p[0]);
+                // Krótki format: D.M
+                return d.toLocaleDateString('pl-PL', { day: '2-digit', month: '2-digit' });
+            });
+            const series = prices.map(p => p[1]);
 
-        if (priceChartInstance) priceChartInstance.destroy();
-
-        priceChartInstance = new Chart(ctx, {
-            type: 'line',
-            data: {
-                labels,
-                datasets: [{
-                    label: 'Cena USD',
-                    data,
-                    borderColor: 'rgba(75,192,192,1)',
-                    backgroundColor: 'rgba(75,192,192,0.2)',
-                    fill: true,
-                    tension: 0.3,
-                    pointRadius: 2,
-                    pointHoverRadius: 5
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                scales: {
-                    x: { title: { display: true, text: 'Data' } },
-                    y: { title: { display: true, text: 'Cena (USD)' }, beginAtZero: false }
+            // 4) Rysujemy wykres na osi kategorii (bez adaptera czasu)
+            const ctx = document.getElementById('priceChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels,
+                    datasets: [{
+                        label: 'Cena (USD)',
+                        data: series,
+                        borderColor: '#6d28d9',
+                        borderWidth: 2,
+                        tension: 0.25,
+                        fill: false,
+                        pointRadius: 0,
+                    }]
+                },
+                options: {
+                    animation: false,
+                    scales: {
+                        x: {
+                            ticks: { color: '#6b7280', maxTicksLimit: 8 },
+                            grid: { display: false }
+                        },
+                        y: {
+                            ticks: {
+                                color: '#6b7280',
+                                callback: v => '$' + Number(v).toLocaleString()
+                            },
+                            grid: { color: '#e5e7eb' }
+                        }
+                    },
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                title: (items) => {
+                                    const i = items[0].dataIndex;
+                                    const d = new Date(prices[i][0]);
+                                    return d.toLocaleString('pl-PL');
+                                },
+                                label: (ctx) => `$${Number(ctx.parsed.y).toLocaleString()}`
+                            }
+                        }
+                    }
                 }
-            }
-        });
-    } catch (err) {
-        console.error('Błąd pobierania danych wykresu:', err);
+            });
+        } catch (err) {
+            console.error('Błąd ładowania wykresu:', err);
+        }
     }
-}
-
-// inicjalizacja przy ładowaniu
-fetchChartData(<%= chartDays %>);
-
-document.getElementById('timeRange').addEventListener('change', (e) => {
-    fetchChartData(e.target.value);
-});
 </script>
-</body>
-</html>

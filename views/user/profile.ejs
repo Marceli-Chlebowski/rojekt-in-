@@ -1,0 +1,56 @@
+<h1 class="section-title">Mój profil</h1>
+<p class="lead">Zobacz i edytuj swoje dane.</p>
+
+<div class="form-card">
+    <h2 style="margin-top:0;">Dane konta</h2>
+    <form method="post" action="/user/profile">
+        <div class="form-row">
+            <div>
+                <label>Imię</label>
+                <input class="input" name="first_name" value="<%= userRow.first_name %>" required>
+            </div>
+            <div>
+                <label>Nazwisko</label>
+                <input class="input" name="last_name" value="<%= userRow.last_name %>" required>
+            </div>
+        </div>
+
+        <div class="form-row">
+            <div>
+                <label>Data urodzenia</label>
+                <input class="input" type="date" name="birth_date" value="<%= userRow.birth_date %>" required>
+            </div>
+            <div>
+                <label>Login</label>
+                <input class="input" name="username" value="<%= userRow.username %>" required>
+            </div>
+        </div>
+
+        <div>
+            <label>Email</label>
+            <input class="input" type="email" name="email" value="<%= userRow.email %>" required>
+        </div>
+
+        <div class="form-actions">
+            <button class="btn" type="submit">Zapisz zmiany</button>
+            <a href="/" class="btn btn-outline">Anuluj</a>
+        </div>
+    </form>
+</div>
+
+<div class="form-card" style="margin-top:16px;">
+    <h2 style="margin-top:0;">Hasło</h2>
+    <p class="muted">Hasło jest przechowywane jako zaszyfrowany hash. Tutaj możesz je zmienić.</p>
+
+    <div style="margin:10px 0;">
+        <label>Aktualne hasło</label>
+        <input class="input" type="password" name="current_password" form="pwForm" placeholder="••••••••" required>
+    </div>
+    <div style="margin:10px 0;">
+        <label>Nowe hasło</label>
+        <input class="input" type="password" name="new_password" form="pwForm" placeholder="min. 8 znaków" minlength="8" required>
+    </div>
+    <form id="pwForm" method="post" action="/user/change-password" class="form-actions">
+        <button class="btn" type="submit">Zmień hasło</button>
+    </form>
+</div>

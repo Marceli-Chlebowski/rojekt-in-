@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"><title>Ulubione</title></head>
+<body>
+<h1 class="section-title">Ulubione</h1>
+<p class="lead">Twoje polubione kryptowaluty.</p>
+
+<div class="crypto-list">
+    <% (cryptos || []).forEach(crypto => { %>
+        <div class="crypto-card">
+            <button class="star-btn <%= (favoriteIds || []).includes(crypto.id) ? 'active' : '' %>"
+                    data-coin="<%= crypto.id %>" title="Usuń z ulubionych" aria-label="Ulubione">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M12 .587l3.668 7.431 8.2 1.192-5.934 5.787 1.402 8.168L12 18.896l-7.336 3.869 1.402-8.168L.132 9.21l8.2-1.192z"/>
+                </svg>
+            </button>
+
+            <a href="/crypto/<%= crypto.id %>">
+                <img src="<%= crypto.image %>" alt="<%= crypto.name %> logo">
+                <h3><%= crypto.name %> (<%= (crypto.symbol || '').toUpperCase() %>)</h3>
+            </a>
+            <p>Cena: $<%= Number(crypto.current_price || 0).toLocaleString() %></p>
+            <p>Zmiana 24h:
+                <span class="<%= (crypto.price_change_percentage_24h || 0) >= 0 ? 'up' : 'down' %>">
+          <%= Number(crypto.price_change_percentage_24h || 0).toFixed(2) %>%
+        </span>
+            </p>
+        </div>
+    <% }) %>
+</div>
+
+<script>
+    document.addEventListener('click', async (e) => {
+        const btn = e.target.closest('.star-btn');
+        if (!btn) return;
+
+        const coinId = btn.getAttribute('data-coin');
+        btn.classList.toggle('active'); // optymistycznie
+
+        try {
+            const res = await fetch('/favorites/toggle', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ coin_id: coinId })
+            });
+            const data = await res.json();
+            if (!res.ok || !data.ok) {
+                btn.classList.toggle('active');
+                alert(data.error || 'Nie udało się zmienić ulubionych');
+                return;
+            }
+            // jeśli odznaczono w ulubionych – usuń kartę z listy
+            if (!btn.classList.contains('active')) {
+                btn.closest('.crypto-card').remove();
+            }
+        } catch (err) {
+            btn.classList.toggle('active');
+            alert('Błąd sieci');
+        }
+    });
+</script>
+
+</body>
+</html>

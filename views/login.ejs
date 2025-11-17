@@ -1,17 +1,20 @@
 <!DOCTYPE html>
-<html lang="pl">
-<head>
-    <meta charset="UTF-8">
-    <title>CryptoEdu</title>
-    <link rel="stylesheet" href="/css/style.css">
-
-</head>
-<body>
-<h2>Logowanie</h2>
-<form method="post" action="/login">
-    <input name="email" placeholder="Email" required /><br/>
-    <input name="password" type="password" placeholder="Hasło" required /><br/>
-    <button type="submit">Zaloguj</button>
-</form>
-</body>
+<html>
+<head><meta charset="utf-8"><title>Logowanie</title></head>
+<main>
+    <div class="form-card">
+        <h1>Logowanie</h1>
+        <% if (typeof error !== 'undefined' && error) { %>
+            <div class="flash error"><%= error %></div>
+        <% } %>
+        <form method="post" action="/auth/login">
+            <input class="input" name="login" placeholder="Email lub login" required />
+            <input class="input" name="password" type="password" placeholder="Hasło" required />
+            <div class="form-actions">
+                <button class="btn" type="submit">Zaloguj</button>
+                <a href="/auth/register">Nie masz konta? Zarejestruj się</a>
+            </div>
+        </form>
+    </div>
+</main>
 </html>

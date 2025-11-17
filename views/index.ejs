@@ -1,49 +1,78 @@
-<!DOCTYPE html>
-<html lang="pl">
-<head>
-    <meta charset="UTF-8">
-    <title>CryptoEdu</title>
-    <link rel="stylesheet" href="/css/style.css">
-</head>
-<body>
-<header>
-    <h1>Witaj na CryptoEdu</h1>
-    <p>Prototyp aplikacji edukacyjnej o kryptowalutach.</p>
-</header>
+<h1 class="section-title">Witaj na CryptoEdu</h1>
+<p class="lead">Prototyp aplikacji edukacyjnej o kryptowalutach.</p>
+
 <form class="crypto-search" method="get" action="/">
-    <input type="text" name="search" placeholder="Wyszukaj kryptowalutę..." value="<%= typeof search !== 'undefined' ? search : '' %>">
-    <button type="submit">Szukaj</button>
+    <input class="input" type="text" name="search" placeholder="Wyszukaj kryptowalutę..." value="<%= typeof search !== 'undefined' ? search : '' %>">
+    <button class="btn" type="submit">Szukaj</button>
 </form>
 
 <div class="crypto-list">
-    <% cryptos.forEach(crypto => { %>
+    <% (cryptos || []).forEach(crypto => { %>
         <div class="crypto-card">
+            <!-- ⭐ gwiazdka -->
+            <button class="star-btn <%= (favoriteIds || []).includes(crypto.id) ? 'active' : '' %>"
+                    data-coin="<%= crypto.id %>" title="Ulubione" aria-label="Ulubione">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M12 .587l3.668 7.431 8.2 1.192-5.934 5.787 1.402 8.168L12 18.896l-7.336 3.869 1.402-8.168L.132 9.21l8.2-1.192z"/>
+                </svg>
+            </button>
+
             <a href="/crypto/<%= crypto.id %>">
                 <img src="<%= crypto.image %>" alt="<%= crypto.name %> logo">
-                <h3><%= crypto.name %> (<%= crypto.symbol.toUpperCase() %>)</h3>
+                <h3><%= crypto.name %> (<%= (crypto.symbol || '').toUpperCase() %>)</h3>
             </a>
-            <p>Cena: $<%= crypto.current_price.toLocaleString() %></p>
+            <p>Cena: $<%= Number(crypto.current_price ?? 0).toLocaleString() %></p>
             <p>Zmiana 24h:
-                <span class="<%= crypto.price_change_percentage_24h >= 0 ? 'up' : 'down' %>">
-                    <%= crypto.price_change_percentage_24h.toFixed(2) %>%
-                </span>
+                <span class="<%= (crypto.price_change_percentage_24h ?? 0) >= 0 ? 'up' : 'down' %>">
+          <%= Number(crypto.price_change_percentage_24h ?? 0).toFixed(2) %>%
+        </span>
             </p>
         </div>
     <% }) %>
 </div>
 
 <div class="pagination">
-    <% if(currentPage > 1) { %>
-        <a href="/?page=<%= currentPage - 1 %>">Poprzednia</a>
+    <% if (currentPage > 1) { %>
+        <a href="/?page=<%= currentPage - 1 %>&search=<%= search || '' %>">Poprzednia</a>
     <% } %>
-
-    <% for(let i=1; i<=totalPages; i++) { %>
-        <a href="/?page=<%= i %>" class="<%= i === currentPage ? 'active' : '' %>"><%= i %></a>
+    <% for (let i = 1; i <= totalPages; i++) { %>
+        <a href="/?page=<%= i %>&search=<%= search || '' %>" class="<%= i === currentPage ? 'active' : '' %>"><%= i %></a>
     <% } %>
-
-    <% if(currentPage < totalPages) { %>
-        <a href="/?page=<%= currentPage + 1 %>">Następna</a>
+    <% if (currentPage < totalPages) { %>
+        <a href="/?page=<%= currentPage + 1 %>&search=<%= search || '' %>">Następna</a>
     <% } %>
 </div>
-</body>
-</html>
+
+<script>
+    // Sprawdź zalogowanie z layoutu (data-logged-in)
+    const isLoggedIn = document.body.dataset.loggedIn === '1';
+
+    document.addEventListener('click', async (e) => {
+        const btn = e.target.closest('.star-btn');
+        if (!btn) return;
+
+        if (!isLoggedIn) {
+            window.location.href = '/auth/login';
+            return;
+        }
+
+        const coinId = btn.getAttribute('data-coin');
+        btn.classList.toggle('active'); // optymistycznie
+
+        try {
+            const res = await fetch('/favorites/toggle', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ coin_id: coinId })
+            });
+            const data = await res.json();
+            if (!res.ok || !data.ok) {
+                btn.classList.toggle('active'); // rollback
+                alert(data.error || 'Nie udało się zmienić ulubionych');
+            }
+        } catch (err) {
+            btn.classList.toggle('active');
+            alert('Błąd sieci');
+        }
+    });
+</script>

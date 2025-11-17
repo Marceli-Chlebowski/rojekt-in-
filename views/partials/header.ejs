@@ -1,0 +1,20 @@
+<nav style="display:flex; gap:12px; align-items:center;">
+    <a href="/favorites">Ulubione</a>
+
+    <% if (user) { %>
+        <span style="opacity:.8">
+      Zalogowany jako <strong><%= user.username %></strong>
+            <% if (loggedInAt) { %>
+                • od <%= new Date(loggedInAt).toLocaleString('pl-PL') %>
+            <% } %>
+        </span>
+
+        <form method="post" action="/auth/logout" style="display:inline; margin-left:8px;">
+            <button type="submit">Wyloguj</button>
+        </form>
+    <% } else { %>
+        <a href="/auth/login">Logowanie</a>
+        <a href="/auth/register">Rejestracja</a>
+    <% } %>
+</nav>
+<hr>
