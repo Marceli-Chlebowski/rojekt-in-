@@ -1,0 +1,36 @@
+<div class="admin-page">
+    <div class="admin-card admin-auth-wrapper">
+        <div>
+            <h1 class="admin-title">Panel administracyjny</h1>
+            <p class="admin-subtitle">Zaloguj się, aby zarządzać artykułami i quizami.</p>
+        </div>
+
+        <% if (error) { %>
+            <div class="admin-badge" style="background: rgba(239,68,68,0.12); color:#fecaca;">
+                <%= error %>
+            </div>
+        <% } %>
+
+        <form method="post" action="/admin/login" style="width: 100%;">
+            <div class="admin-form-group">
+                <label class="admin-form-label">Login</label>
+                <input type="text" name="username" class="admin-input" required>
+            </div>
+
+            <div class="admin-form-group">
+                <label class="admin-form-label">Hasło</label>
+                <input type="password" name="password" class="admin-input" required>
+            </div>
+
+            <div style="display:flex; justify-content: flex-end; margin-top: 1rem;">
+                <button type="submit" class="admin-btn admin-btn-primary">
+                    Zaloguj się
+                </button>
+            </div>
+        </form>
+
+        <p class="admin-secondary-link">
+            Domyślne dane: <code>admin / admin123</code> (zmienisz w <code>routes/admin.js</code>).
+        </p>
+    </div>
+</div>

@@ -1,0 +1,46 @@
+<div class="admin-page">
+    <div class="admin-card admin-card--wide">
+        <div class="admin-page-header">
+            <div>
+                <div class="admin-breadcrumb">
+                    <a href="/admin">Dashboard</a> /
+                    <a href="/admin/quizzes">Quizy</a> /
+                    <%= quiz ? 'Edytuj' : 'Nowy' %>
+                </div>
+                <h1 class="admin-title">
+                    <%= quiz ? 'Edytuj quiz' : 'Nowy quiz' %>
+                </h1>
+            </div>
+        </div>
+
+        <form method="post" action="<%= action %>">
+            <div class="admin-form-group">
+                <label class="admin-form-label">Tytuł</label>
+                <input
+                        type="text"
+                        name="title"
+                        class="admin-input"
+                        value="<%= quiz ? quiz.title : '' %>"
+                        required
+                >
+            </div>
+
+            <div class="admin-form-group">
+                <label class="admin-form-label">Opis</label>
+                <textarea
+                        name="description"
+                        class="admin-textarea"
+                ><%= quiz ? (quiz.description || '') : '' %></textarea>
+            </div>
+
+            <div style="display:flex; gap:0.75rem; justify-content:flex-end; margin-top:1rem;">
+                <a href="/admin/quizzes" class="admin-btn admin-btn-secondary">
+                    Anuluj
+                </a>
+                <button type="submit" class="admin-btn admin-btn-primary">
+                    Zapisz
+                </button>
+            </div>
+        </form>
+    </div>
+</div>

@@ -1,0 +1,50 @@
+<div class="admin-page">
+    <div class="admin-card admin-card--wide">
+        <div class="admin-page-header">
+            <div>
+                <div class="admin-breadcrumb">
+                    Dashboard
+                </div>
+                <h1 class="admin-title">Panel administracyjny</h1>
+                <p class="admin-subtitle">
+                    Podsumowanie treści edukacyjnych i quizów w aplikacji.
+                </p>
+            </div>
+            <div class="admin-table-actions">
+                <a href="/admin/articles" class="admin-btn-small">Artykuły</a>
+                <a href="/admin/quizzes" class="admin-btn-small">Quizy</a>
+                <a href="/admin/millionaire/questions" class="admin-btn-small">Milionerzy</a>
+                <a href="/admin/logout" class="admin-btn-small admin-btn-small--danger">Wyloguj</a>
+            </div>
+        </div>
+
+        <div class="admin-table-wrapper">
+            <table class="admin-table">
+                <thead>
+                <tr>
+                    <th>Typ</th>
+                    <th>Ilość</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr>
+                    <td>Artykuły</td>
+                    <td><span class="admin-badge"><%= articlesCount %></span></td>
+                </tr>
+                <tr>
+                    <td>Quizy</td>
+                    <td><span class="admin-badge"><%= quizzesCount %></span></td>
+                </tr>
+                <tr>
+                    <td>Pytania</td>
+                    <td><span class="admin-badge"><%= questionsCount %></span></td>
+                </tr>
+                <tr>
+                    <td>Milionerzy</td>
+                    <td><span class="admin-badge"><%= millionaireCount %></span></td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

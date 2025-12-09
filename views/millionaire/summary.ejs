@@ -1,0 +1,28 @@
+<div class="millionaire-wrapper">
+    <div class="millionaire-card">
+        <h1 class="millionaire-title">Game Over</h1>
+
+        <p class="millionaire-subtitle">
+            Correct answers: <strong><%= score %> / <%= total %></strong>
+        </p>
+
+        <p class="lead">
+            Your prize:
+            <strong><%= earnedPrize.toLocaleString('pl-PL') %> $</strong>
+        </p>
+
+        <% if (score === total) { %>
+            <p class="muted">Congratulations! You got the full prize 🎉</p>
+        <% } else if (score === 0) { %>
+            <p class="muted">This time it didn’t work out. Try again!</p>
+        <% } else { %>
+            <p class="muted">Not bad! You can always improve your score.</p>
+        <% } %>
+
+        <div class="millionaire-actions" style="margin-top: 24px;">
+            <a href="/millionaire/start" class="btn">▶️ Play again</a>
+            <a href="/millionaire/leaderboard" class="btn btn-outline">🏆 Leaderboard</a>
+            <a href="/" class="btn btn-outline">Home</a>
+        </div>
+    </div>
+</div>

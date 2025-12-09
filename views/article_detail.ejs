@@ -1,18 +1,61 @@
-<!DOCTYPE html>
-<html lang="pl">
-<head>
-    <meta charset="UTF-8">
-    <title><%= article.title %> - CryptoEdu</title>
-    <link rel="stylesheet" href="/css/style.css">
-</head>
-<body>
-<header>
-    <h1><%= article.title %></h1>
-    <small>Opublikowano: <%= new Date(article.created_at).toLocaleDateString() %></small>
-</header>
-<main>
-    <p><%= article.content %></p>
-    <a href="/articles" class="btn">Powrót do listy artykułów</a>
-</main>
-</body>
-</html>
+<a href="/articles" class="back-link" style="margin-bottom: 16px; display:inline-flex;">
+    <span class="arrow">←</span>
+    Powrót do listy artykułów
+</a>
+
+<div class="card">
+    <h1 class="section-title"><%= article.title %></h1>
+    <p class="muted">
+        Opublikowano: <%= article.created_at.toLocaleString('pl-PL') %>
+    </p>
+
+    <% if (article.image_url) { %>
+        <img src="<%= article.image_url %>"
+             alt="<%= article.title %>"
+             class="article-hero">
+    <% } %>
+
+    <div style="margin-top:16px; line-height:1.6;">
+        <%- article.content.replace(/\n/g, '<br>') %>
+    </div>
+</div>
+
+<div class="card" style="margin-top: 24px;">
+    <h2 class="section-title" style="font-size:22px;">Komentarze</h2>
+
+    <% if (!comments.length) { %>
+        <p class="muted">Brak komentarzy. Bądź pierwszy!</p>
+    <% } else { %>
+        <ul style="list-style:none; padding:0; margin:12px 0;">
+            <% comments.forEach(c => { %>
+                <li style="padding:10px 0; border-bottom:1px solid var(--border);">
+                    <div style="font-size:14px; margin-bottom:4px;">
+                        <strong><%= c.username %></strong>
+                        <span class="muted" style="margin-left:8px;">
+              <%= c.created_at.toLocaleString('pl-PL') %>
+            </span>
+                    </div>
+                    <div><%- c.content.replace(/\n/g, '<br>') %></div>
+                </li>
+            <% }) %>
+        </ul>
+    <% } %>
+
+    <% if (user) { %>
+        <form method="post"
+              action="/articles/<%= article.id %>/comments"
+              style="margin-top: 16px;">
+            <label class="muted" style="display:block; margin-bottom:6px;">
+                Dodaj komentarz:
+            </label>
+            <textarea name="content" class="input" rows="3" required></textarea>
+            <div class="form-actions" style="margin-top:8px;">
+                <button type="submit" class="btn">Dodaj komentarz</button>
+            </div>
+        </form>
+    <% } else { %>
+        <p class="muted" style="margin-top: 12px;">
+            Aby dodać komentarz, <a href="/auth/login">zaloguj się</a>.
+        </p>
+    <% } %>
+</div>

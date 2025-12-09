@@ -1,0 +1,28 @@
+<div class="form-card">
+    <h1>Milionerzy</h1>
+
+    <% if (typeof minRequired !== 'undefined') { %>
+        <p class="lead">
+            Za mało pytań, aby uruchomić grę.
+        </p>
+        <p class="muted">
+            Minimalna liczba aktywnych pytań: <strong><%= minRequired %></strong><br>
+            Aktualnie dostępnych pytań: <strong><%= currentCount %></strong>.
+        </p>
+        <p class="muted">
+            Dodaj więcej pytań w panelu admina w sekcji
+            <strong>Milionerzy – pytania</strong>.
+        </p>
+    <% } else { %>
+        <p class="lead">
+            Brak pytań dla tego trybu.
+        </p>
+        <p class="muted">
+            Dodaj pytania w panelu admina dla trybu <strong>Milionerzy</strong>.
+        </p>
+    <% } %>
+
+    <div class="form-actions" style="margin-top: 16px;">
+        <a href="/" class="btn btn-outline">Powrót na stronę główną</a>
+    </div>
+</div>

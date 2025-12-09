@@ -1,0 +1,68 @@
+<div class="admin-page">
+    <div class="admin-card admin-card--wide">
+        <div class="admin-page-header">
+            <div>
+                <div class="admin-breadcrumb">
+                    <a href="/admin">Dashboard</a> / Quizy
+                </div>
+                <h1 class="admin-title">Quizy</h1>
+                <p class="admin-subtitle">
+                    Twórz i edytuj quizy, które będą wykorzystywane w aplikacji.
+                </p>
+            </div>
+            <a href="/admin/quizzes/new" class="admin-btn admin-btn-primary">
+                + Dodaj quiz
+            </a>
+        </div>
+
+        <div class="admin-table-wrapper">
+            <table class="admin-table">
+                <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Tytuł</th>
+                    <th>Opis</th>
+                    <th>Akcje</th>
+                </tr>
+                </thead>
+
+                <tbody>
+                <% if (!quizzes.length) { %>
+                    <tr>
+                        <td colspan="4">Brak quizów. Dodaj pierwszy.</td>
+                    </tr>
+                <% } %>
+
+                <% quizzes.forEach(q => { %>
+                    <tr>
+                        <td><%= q.id %></td>
+                        <td><%= q.title %></td>
+                        <td><%= q.description %></td>
+                        <td>
+                            <div class="admin-table-actions">
+                                <a href="/admin/quizzes/<%= q.id %>/edit" class="admin-btn-small">Edytuj</a>
+                                <a href="/admin/quizzes/<%= q.id %>/questions" class="admin-btn-small">Pytania</a>
+
+                                <form method="post" action="/admin/quizzes/<%= q.id %>/delete">
+                                    <button type="submit"
+                                            class="admin-btn-small admin-btn-small--danger"
+                                            onclick="return confirm('Na pewno usunąć quiz?')">
+                                        Usuń
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                <% }) %>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- ✅ PRZYCISK POWROTU NA DOLE -->
+        <a href="/admin" class="admin-btn admin-btn-secondary"
+           style="display:inline-flex; gap:6px; margin-top:18px;">
+            ← Powrót
+        </a>
+
+    </div>
+</div>

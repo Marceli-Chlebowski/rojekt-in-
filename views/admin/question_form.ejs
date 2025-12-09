@@ -1,0 +1,123 @@
+<div class="admin-page">
+    <div class="admin-card admin-card--wide">
+
+        <div class="admin-breadcrumb">
+            <a href="/admin">Panel admina</a> ›
+            <a href="/admin/quizzes">Quizy</a> ›
+            <a href="/admin/quizzes/<%= quiz.id %>/questions">Pytania</a> ›
+            <span><%= question ? 'Edycja pytania' : 'Nowe pytanie' %></span>
+        </div>
+
+        <h1 class="admin-title">
+            <%= question ? 'Edytuj pytanie – ' + quiz.title : 'Dodaj pytanie – ' + quiz.title %>
+        </h1>
+        <p class="admin-subtitle">
+            Uzupełnij treść pytania, odpowiedzi i wybierz poprawną odpowiedź.
+        </p>
+
+        <form method="post" action="<%= action %>">
+            <!-- Treść pytania -->
+            <div class="admin-form-group">
+                <label class="admin-form-label">
+                    Treść pytania:
+                </label>
+                <textarea
+                        name="question_text"
+                        class="admin-textarea"
+                        rows="3"
+                        required
+                ><%= question ? question.question_text : '' %></textarea>
+            </div>
+
+            <!-- Odpowiedzi A / B -->
+            <div class="admin-form-group">
+                <div class="form-row">
+                    <div>
+                        <label class="admin-form-label">Odpowiedź A:</label>
+                        <input
+                                type="text"
+                                name="opt_a"
+                                class="admin-input"
+                                required
+                                value="<%= question ? question.opt_a : '' %>"
+                        >
+                    </div>
+                    <div>
+                        <label class="admin-form-label">Odpowiedź B:</label>
+                        <input
+                                type="text"
+                                name="opt_b"
+                                class="admin-input"
+                                required
+                                value="<%= question ? question.opt_b : '' %>"
+                        >
+                    </div>
+                </div>
+            </div>
+
+            <!-- Odpowiedzi C / D -->
+            <div class="admin-form-group">
+                <div class="form-row">
+                    <div>
+                        <label class="admin-form-label">Odpowiedź C:</label>
+                        <input
+                                type="text"
+                                name="opt_c"
+                                class="admin-input"
+                                required
+                                value="<%= question ? question.opt_c : '' %>"
+                        >
+                    </div>
+                    <div>
+                        <label class="admin-form-label">Odpowiedź D:</label>
+                        <input
+                                type="text"
+                                name="opt_d"
+                                class="admin-input"
+                                required
+                                value="<%= question ? question.opt_d : '' %>"
+                        >
+                    </div>
+                </div>
+            </div>
+
+            <!-- Poziom trudności + poprawna -->
+            <div class="admin-form-group">
+                <div class="form-row">
+                    <div>
+                        <label class="admin-form-label">Poziom trudności (level):</label>
+                        <input
+                                type="number"
+                                name="level"
+                                class="admin-input"
+                                min="1"
+                                max="10"
+                                value="<%= question ? (question.level || 1) : 1 %>"
+                        >
+                    </div>
+                    <div>
+                        <label class="admin-form-label">Poprawna odpowiedź:</label>
+                        <% const correct = question ? question.correct_opt : 'A'; %>
+                        <select name="correct_opt" class="admin-select" required>
+                            <option value="A" <%= correct === 'A' ? 'selected' : '' %>>A</option>
+                            <option value="B" <%= correct === 'B' ? 'selected' : '' %>>B</option>
+                            <option value="C" <%= correct === 'C' ? 'selected' : '' %>>C</option>
+                            <option value="D" <%= correct === 'D' ? 'selected' : '' %>>D</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div style="margin-top: 24px; display:flex; gap:10px; flex-wrap:wrap;">
+                <button type="submit" class="admin-btn admin-btn-primary">
+                    <%= question ? 'Zapisz zmiany' : 'Dodaj pytanie' %>
+                </button>
+
+                <a href="/admin/quizzes/<%= quiz.id %>/questions"
+                   class="admin-btn admin-btn-secondary">
+                    Anuluj
+                </a>
+            </div>
+        </form>
+    </div>
+</div>

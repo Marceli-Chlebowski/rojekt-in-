@@ -1,0 +1,193 @@
+<div class="admin-page">
+    <div class="admin-card admin-card--wide">
+
+        <div class="admin-page-header">
+            <div>
+                <h1 class="admin-title">
+                    <%= question ? 'Edytuj pytanie – Milionerzy' : 'Nowe pytanie – Milionerzy' %>
+                </h1>
+                <p class="admin-subtitle">
+                    Ustaw treść pytania, odpowiedzi, poprawną odpowiedź, 50/50 oraz procenty opinii publicznej.
+                </p>
+            </div>
+
+            <div>
+                <a href="/admin/millionaire/questions"
+                   class="admin-btn admin-btn-secondary">
+                    ← Lista pytań
+                </a>
+            </div>
+        </div>
+
+        <form method="post" action="<%= action %>">
+
+            <!-- TREŚĆ PYTANIA -->
+            <div class="admin-form-group">
+                <label class="admin-form-label">Treść pytania:</label>
+                <textarea name="question_text"
+                          class="admin-textarea"
+                          required><%= question ? question.question_text : '' %></textarea>
+            </div>
+
+            <!-- ODPOWIEDZI A/B/C/D -->
+            <div class="admin-form-group">
+                <label class="admin-form-label">Odpowiedzi:</label>
+
+                <div class="form-row">
+                    <div>
+                        <label class="admin-form-label">Odpowiedź A:</label>
+                        <input type="text"
+                               name="opt_a"
+                               class="admin-input"
+                               value="<%= question ? question.opt_a : '' %>"
+                               required>
+                    </div>
+                    <div>
+                        <label class="admin-form-label">Odpowiedź B:</label>
+                        <input type="text"
+                               name="opt_b"
+                               class="admin-input"
+                               value="<%= question ? question.opt_b : '' %>"
+                               required>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div>
+                        <label class="admin-form-label">Odpowiedź C:</label>
+                        <input type="text"
+                               name="opt_c"
+                               class="admin-input"
+                               value="<%= question ? question.opt_c : '' %>"
+                               required>
+                    </div>
+                    <div>
+                        <label class="admin-form-label">Odpowiedź D:</label>
+                        <input type="text"
+                               name="opt_d"
+                               class="admin-input"
+                               value="<%= question ? question.opt_d : '' %>"
+                               required>
+                    </div>
+                </div>
+            </div>
+
+            <!-- POPRAWNA ODPOWIEDŹ + AKTYWNOŚĆ -->
+            <div class="admin-form-group">
+                <div class="form-row">
+                    <div>
+                        <label class="admin-form-label">Poprawna odpowiedź:</label>
+                        <select name="correct_opt" class="admin-select" required>
+                            <% const correct = question ? question.correct_opt : 'A'; %>
+                            <option value="A" <%= correct === 'A' ? 'selected' : '' %>>A</option>
+                            <option value="B" <%= correct === 'B' ? 'selected' : '' %>>B</option>
+                            <option value="C" <%= correct === 'C' ? 'selected' : '' %>>C</option>
+                            <option value="D" <%= correct === 'D' ? 'selected' : '' %>>D</option>
+                        </select>
+                    </div>
+                    <div style="display:flex; align-items:flex-end;">
+                        <label style="display:flex; align-items:center; gap:8px;">
+                            <input type="checkbox"
+                                   name="is_active"
+                                    <%= question && question.is_active ? 'checked' : (!question ? 'checked' : '') %>>
+                            <span class="admin-form-label" style="margin-bottom:0;">
+                Aktywne pytanie (może zostać wylosowane)
+              </span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 50/50 -->
+            <div class="admin-form-group">
+                <label class="admin-form-label">
+                    Koło 50/50 – zaznacz, które odpowiedzi mają zostać UKRYTE
+                    (poprawna odpowiedź i tak nie zostanie ukryta).
+                </label>
+
+                <% const f = fifty || {}; %>
+                <% const corr = (question ? question.correct_opt : 'A') || 'A'; %>
+
+                <div class="admin-fifty-group">
+                    <% ['A','B','C','D'].forEach(letter => { %>
+                        <% const name = 'hide_' + letter.toLowerCase(); %>
+                        <% const isCorrect = (corr === letter); %>
+                        <% const checked =
+                                f && f[name] ? 'checked' : ''; %>
+
+                        <label class="<%= isCorrect ? 'admin-fifty-disabled' : '' %>">
+                            <input type="checkbox"
+                                   name="<%= name %>"
+                                   value="1"
+                                    <%= checked %>
+                                    <%= isCorrect ? 'disabled' : '' %>>
+                            <span>Ukryj <strong><%= letter %></strong></span>
+                        </label>
+                    <% }) %>
+                </div>
+            </div>
+
+            <!-- OPINIA PUBLICZNA -->
+            <div class="admin-form-group">
+                <label class="admin-form-label">
+                    Opinia publiczna – procenty dla każdej odpowiedzi (nie muszą sumować się do 100, to tylko podpowiedź).
+                </label>
+
+                <% const a = audience || {}; %>
+
+                <div class="form-row">
+                    <div>
+                        <label class="admin-form-label">% dla A:</label>
+                        <input type="number"
+                               name="perc_a"
+                               class="admin-input"
+                               min="0" max="100"
+                               value="<%= a.perc_a != null ? a.perc_a : '' %>">
+                    </div>
+                    <div>
+                        <label class="admin-form-label">% dla B:</label>
+                        <input type="number"
+                               name="perc_b"
+                               class="admin-input"
+                               min="0" max="100"
+                               value="<%= a.perc_b != null ? a.perc_b : '' %>">
+                    </div>
+                </div>
+
+                <div class="form-row" style="margin-top: 8px;">
+                    <div>
+                        <label class="admin-form-label">% dla C:</label>
+                        <input type="number"
+                               name="perc_c"
+                               class="admin-input"
+                               min="0" max="100"
+                               value="<%= a.perc_c != null ? a.perc_c : '' %>">
+                    </div>
+                    <div>
+                        <label class="admin-form-label">% dla D:</label>
+                        <input type="number"
+                               name="perc_d"
+                               class="admin-input"
+                               min="0" max="100"
+                               value="<%= a.perc_d != null ? a.perc_d : '' %>">
+                    </div>
+                </div>
+            </div>
+
+            <!-- AKCJE -->
+            <div class="admin-form-group" style="margin-top: 22px;">
+                <div class="admin-table-actions">
+                    <button type="submit" class="admin-btn admin-btn-primary">
+                        Zapisz
+                    </button>
+                    <a href="/admin/millionaire/questions"
+                       class="admin-btn admin-btn-secondary">
+                        Anuluj
+                    </a>
+                </div>
+            </div>
+
+        </form>
+
+    </div>
+</div>

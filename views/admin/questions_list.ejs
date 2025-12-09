@@ -1,0 +1,75 @@
+<div class="admin-page">
+    <div class="admin-card admin-card--wide">
+
+        <div class="admin-page-header">
+            <div>
+
+                <div class="admin-breadcrumb">
+                    <a href="/admin">Dashboard</a> /
+                    <a href="/admin/quizzes">Quizy</a> /
+                    <span><%= quiz.title %></span> / Pytania
+                </div>
+
+                <h1 class="admin-title">Pytania – <%= quiz.title %></h1>
+                <p class="admin-subtitle">
+                    Dodawaj i edytuj pytania w tym quizie.
+                </p>
+            </div>
+
+            <a href="/admin/quizzes/<%= quiz.id %>/questions/new"
+               class="admin-btn admin-btn-primary">
+                + Dodaj pytanie
+            </a>
+        </div>
+
+        <div class="admin-table-wrapper">
+            <table class="admin-table">
+                <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Treść</th>
+                    <th>Poprawna opcja</th>
+                    <th>Akcje</th>
+                </tr>
+                </thead>
+                <tbody>
+                <% if (!questions.length) { %>
+                    <tr>
+                        <td colspan="4">Brak pytań w tym quizie.</td>
+                    </tr>
+                <% } %>
+
+                <% questions.forEach(q => { %>
+                    <tr>
+                        <td><%= q.id %></td>
+                        <td><%= q.question_text %></td>
+                        <td><span class="admin-badge"><%= q.correct_opt %></span></td>
+
+                        <td>
+                            <div class="admin-table-actions">
+                                <a href="/admin/questions/<%= q.id %>/edit"
+                                   class="admin-btn-small">Edytuj</a>
+
+                                <form method="post" action="/admin/questions/<%= q.id %>/delete">
+                                    <button class="admin-btn-small admin-btn-small--danger"
+                                            onclick="return confirm('Na pewno usunąć pytanie?');">
+                                        Usuń
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                <% }) %>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- ⬇️⬇️⬇️ DODANY PRZYCISK POWROTU NA DOIŁ -->
+        <a href="/admin" class="admin-btn admin-btn-secondary"
+           style="display:inline-flex; gap:6px; margin-top:16px;">
+            ← Powrót
+        </a>
+        <!-- ⬆️⬆️⬆️ KONIEC POPRAWKI -->
+
+    </div>
+</div>

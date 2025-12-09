@@ -1,0 +1,87 @@
+<div class="admin-page">
+    <div class="admin-card admin-card--wide">
+
+        <div class="admin-page-header">
+            <div>
+                <h1 class="admin-title">Artykuły</h1>
+                <p class="admin-subtitle">
+                    Zarządzaj artykułami, ich obrazkami i komentarzami użytkowników.
+                </p>
+            </div>
+
+            <div>
+                <a href="/admin/articles/new"
+                   class="admin-btn admin-btn-primary">
+                    + Dodaj artykuł
+                </a>
+            </div>
+        </div>
+
+        <div class="admin-table-wrapper">
+            <table class="admin-table">
+                <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Tytuł</th>
+                    <th>Miniatura</th>
+                    <th>Data</th>
+                    <th style="width:220px;">Akcje</th>
+                </tr>
+                </thead>
+
+                <tbody>
+                <% if (!articles.length) { %>
+                    <tr>
+                        <td colspan="5">Brak artykułów w bazie.</td>
+                    </tr>
+                <% } %>
+
+                <% articles.forEach(a => { %>
+                    <tr>
+                        <td><%= a.id %></td>
+                        <td><%= a.title %></td>
+
+                        <td>
+                            <% if (a.image_url) { %>
+                                <img src="<%= a.image_url %>" alt=""
+                                     style="width:48px; height:48px; object-fit:cover; border-radius:8px;">
+                            <% } else { %>
+                                <span class="admin-badge"
+                                      style="background:rgba(148,163,184,.18); color:#475569;">
+                                    brak
+                                </span>
+                            <% } %>
+                        </td>
+
+                        <td><%= new Date(a.created_at).toLocaleString('pl-PL') %></td>
+
+                        <td>
+                            <div class="admin-table-actions">
+                                <a href="/admin/articles/<%= a.id %>/edit" class="admin-btn-small">Edytuj</a>
+
+                                <a href="/admin/articles/<%= a.id %>/comments" class="admin-btn-small">Komentarze</a>
+
+                                <form method="post"
+                                      action="/admin/articles/<%= a.id %>/delete"
+                                      onsubmit="return confirm('Na pewno usunąć ten artykuł?')">
+                                    <button type="submit"
+                                            class="admin-btn-small admin-btn-small--danger">
+                                        Usuń
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                <% }) %>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- ✅ PRZYCISK POWROTU NA DOLE -->
+        <a href="/admin" class="admin-btn admin-btn-secondary"
+           style="display:inline-flex; gap:6px; margin-top:18px;">
+            ← Powrót
+        </a>
+
+    </div>
+</div>

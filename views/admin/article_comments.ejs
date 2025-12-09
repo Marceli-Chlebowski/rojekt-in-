@@ -1,0 +1,67 @@
+<div class="admin-page">
+    <div class="admin-card admin-card--wide">
+        <div class="admin-breadcrumb">
+            <a href="/admin">Panel admina</a> ›
+            <a href="/admin/articles">Artykuły</a> ›
+            <span>Komentarze: <%= article.title %></span>
+        </div>
+
+        <h1 class="admin-title">
+            Komentarze pod artykułem
+        </h1>
+        <p class="admin-subtitle">
+            Zarządzaj komentarzami użytkowników pod artykułem:
+            <strong><%= article.title %></strong>
+        </p>
+
+        <div class="admin-table-wrapper">
+            <table class="admin-table">
+                <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Użytkownik</th>
+                    <th>Data</th>
+                    <th>Treść</th>
+                    <th style="width:120px;">Akcje</th>
+                </tr>
+                </thead>
+                <tbody>
+                <% if (!comments.length) { %>
+                    <tr>
+                        <td colspan="5">Brak komentarzy pod tym artykułem.</td>
+                    </tr>
+                <% } %>
+
+                <% comments.forEach(c => { %>
+                    <tr>
+                        <td><%= c.id %></td>
+                        <td><%= c.username %></td>
+                        <td><%= new Date(c.created_at).toLocaleString('pl-PL') %></td>
+                        <td>
+                            <%= (c.content || '').length > 140
+                                    ? c.content.slice(0, 140) + '…'
+                                    : c.content %>
+                        </td>
+                        <td>
+                            <form method="post"
+                                  action="/admin/articles/<%= article.id %>/comments/<%= c.id %>/delete"
+                                  onsubmit="return confirm('Na pewno usunąć ten komentarz?');">
+                                <button type="submit"
+                                        class="admin-btn-small admin-btn-small--danger">
+                                    Usuń
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                <% }) %>
+                </tbody>
+            </table>
+        </div>
+
+        <div style="margin-top: 20px;">
+            <a href="/admin/articles" class="admin-btn admin-btn-secondary">
+                ← Powrót do listy artykułów
+            </a>
+        </div>
+    </div>
+</div>

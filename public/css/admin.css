@@ -1,0 +1,331 @@
+/* ============================================
+   ADMIN PANEL – spójny z user CSS (fiolet/szary/czarny/biały)
+=============================================== */
+
+/* Strona admina */
+.admin-page {
+    min-height: calc(100vh - 80px);
+    padding: 32px 16px 48px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background: var(--bg);
+    color: inherit; /* <<< NIE NADPISUJEMY NA BIAŁY, bierzemy z body (#111827) */
+}
+
+/* Karty */
+.admin-card {
+    width: 100%;
+    max-width: 900px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 28px;
+    box-shadow: var(--shadow);
+    color: #111827; /* <<< ciemny tekst wewnątrz karty */
+}
+
+.admin-card--wide {
+    max-width: 1100px;
+}
+
+/* Nagłówki */
+.admin-title {
+    font-size: 26px;
+    margin: 0 0 6px;
+    font-weight: 700;
+    color: var(--brand-700);
+}
+
+.admin-subtitle {
+    margin: 0 0 18px;
+    font-size: 15px;
+    color: var(--muted);
+}
+
+/* -------------------------------
+   FORMULARZE
+------------------------------- */
+
+.admin-form-group {
+    margin-bottom: 18px;
+}
+
+.admin-form-label {
+    display: block;
+    margin-bottom: 6px;
+    color: var(--muted);
+    font-size: 14px;
+}
+
+/* Inputy i textarea – LIGHT MODE */
+.admin-input,
+.admin-textarea,
+.admin-select {
+    width: 100%;
+    background: #ffffff;
+    color: #111827;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 8px 10px;          /* mniej paddingu = więcej miejsca w środku */
+    font-size: 15px;
+    line-height: 1.3;           /* lepsze wyrównanie tekstu */
+    outline: none;
+}
+
+.admin-textarea {
+    min-height: 120px;
+    resize: vertical;
+}
+
+/* liczby (np. % dla A/B/C/D) – spójna wysokość */
+.admin-input[type="number"] {
+    height: 42px;
+}
+
+
+/* Inputy i textarea – DARK MODE */
+@media (prefers-color-scheme: dark) {
+    .admin-input,
+    .admin-textarea,
+    .admin-select {
+        background: #020617;       /* ciemny szary/czarny */
+        color: #e5e7eb;            /* jasny tekst */
+        border-color: #1f2937;
+    }
+
+    .admin-card {
+        background: #111827;
+        color: #e5e7eb;
+    }
+}
+
+/* Focus */
+.admin-input:focus,
+.admin-textarea:focus,
+.admin-select:focus {
+    border-color: var(--brand);                          /* fiolet */
+    box-shadow: 0 0 0 4px rgba(109, 40, 217, 0.12);       /* poświata */
+}
+
+/* -------------------------------
+   PRZYCISKI
+------------------------------- */
+
+.admin-btn {
+    appearance: none;
+    border-radius: 12px;
+    padding: 10px 18px;
+    font-weight: 600;
+    cursor: pointer;
+    border: 1px solid transparent;
+    transition: 0.15s ease;
+}
+
+/* Zielony – akcje pozytywne */
+.admin-btn-primary {
+    background: var(--ok);
+    border-color: var(--ok);
+    color: #fff;
+    box-shadow: 0 6px 16px rgba(16,163,74,.25);
+}
+.admin-btn-primary:hover {
+    background: #15803d;
+}
+
+/* Fioletowy – akcje neutralne */
+.admin-btn-secondary {
+    background: transparent;
+    border: 1px solid var(--brand-700);
+    color: var(--brand-700);
+}
+.admin-btn-secondary:hover {
+    background: rgba(109,40,217,.08);
+}
+
+/* Czerwony – usuwanie, wylogowanie */
+.admin-btn-danger,
+.admin-btn-small--danger {
+    background: transparent;
+    border: 1px solid var(--err);
+    color: var(--err);
+}
+.admin-btn-danger:hover,
+.admin-btn-small--danger:hover {
+    background: rgba(225,29,72,.15);
+}
+
+/* -------------------------------
+   BREADCRUMB
+------------------------------- */
+
+.admin-breadcrumb {
+    font-size: 14px;
+    color: var(--muted);
+    margin-bottom: 12px;
+}
+.admin-breadcrumb a {
+    color: var(--brand-600);
+}
+.admin-breadcrumb a:hover {
+    text-decoration: underline;
+}
+
+/* -------------------------------
+   TABELKI / LISTY
+------------------------------- */
+
+.admin-table-wrapper {
+    width: 100%;
+    overflow-x: auto;
+    margin-top: 20px;
+}
+
+.admin-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: var(--surface);
+}
+
+.admin-table th {
+    text-align: left;
+    padding: 10px;
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    color: #6b7280;                 /* szary nagłówków */
+    border-bottom: 1px solid var(--border);
+}
+
+.admin-table td {
+    padding: 12px 10px;
+    border-bottom: 1px solid var(--border);
+    color: #111827;                 /* <<< ciemny tekst komórek */
+}
+
+@media (prefers-color-scheme: dark) {
+    .admin-table th,
+    .admin-table td {
+        color: #e5e7eb;
+        border-color: #1f2937;
+    }
+}
+
+.admin-table tr:hover td {
+    background: rgba(109,40,217,.05);
+}
+
+/* Akcje w wierszach */
+.admin-table-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.admin-btn-small {
+    padding: 6px 12px;
+    border-radius: 8px;
+    background: transparent;
+    border: 1px solid var(--border);
+    font-size: 13px;
+    cursor: pointer;
+}
+.admin-btn-small:hover {
+    background: rgba(109,40,217,.08);
+}
+
+/* Badge (np. poprawna odpowiedź) */
+.admin-badge {
+    display: inline-block;
+    padding: 2px 10px;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 600;
+    background: rgba(109,40,217,.12);
+    color: var(--brand-700);
+}
+
+/* -------------------------------
+   HEADER SEKCJI
+------------------------------- */
+
+.admin-page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+/* -------------------------------
+   LOGIN BOX
+------------------------------- */
+
+.admin-auth-wrapper {
+    max-width: 420px;
+    margin: 60px auto;
+}
+
+/* ===== Admin – Milionerzy: układ formularzy ===== */
+
+.admin-card .form-row {
+    /* nadpisujemy globalne .form-row, żeby nic się nie nakładało */
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+    gap: 12px 16px;
+    align-items: flex-start;
+}
+
+/* trochę więcej oddechu między label a polem */
+.admin-card .admin-form-label {
+    margin-bottom: 4px;
+}
+
+/* grupy checkboxów 50/50 */
+.admin-fifty-group {
+    margin-top: 10px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 16px;
+}
+
+.admin-fifty-group label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 14px;
+}
+
+/* wizualne wyłączenie opcji 50/50 dla poprawnej odpowiedzi */
+.admin-fifty-disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+.admin-fifty-disabled input {
+    cursor: not-allowed;
+}
+
+.back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 10px 18px;
+    border-radius: 14px;
+    border: 2px solid var(--brand-600);
+    color: var(--brand-600);
+    font-size: 16px;
+    font-weight: 600;
+    text-decoration: none;
+    background: transparent;
+    transition: background .15s ease, transform .05s ease;
+}
+
+.back-link:hover {
+    background: rgba(109,40,217,.06);
+    text-decoration: none;
+    transform: translateY(-1px);
+}
+
+.back-link .arrow {
+    position: relative;
+    top: -1px;      /* PODNOSI LEKKO STRZAŁKĘ */
+}

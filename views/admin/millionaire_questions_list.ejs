@@ -1,0 +1,83 @@
+<div class="admin-page">
+    <div class="admin-card admin-card--wide">
+
+        <div class="admin-page-header">
+            <div>
+                <h1 class="admin-title">Milionerzy – pytania</h1>
+                <p class="admin-subtitle">
+                    Zarządzaj pytaniami do gry Milionerzy, odpowiedziami oraz podpowiedziami.
+                </p>
+            </div>
+
+            <div>
+                <a href="/admin/millionaire/questions/new"
+                   class="admin-btn admin-btn-primary">
+                    + Dodaj pytanie
+                </a>
+            </div>
+        </div>
+
+        <div class="admin-table-wrapper">
+            <table class="admin-table">
+                <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Treść</th>
+                    <th>Poprawna</th>
+                    <th>Status</th>
+                    <th style="width: 160px;">Akcje</th>
+                </tr>
+                </thead>
+                <tbody>
+                <% if (!questions.length) { %>
+                    <tr>
+                        <td colspan="5">Brak pytań w bazie.</td>
+                    </tr>
+                <% } %>
+
+                <% questions.forEach(q => { %>
+                    <tr>
+                        <td><%= q.id %></td>
+                        <td>
+                            <%= (q.question_text || '').length > 80
+                                    ? q.question_text.slice(0, 80) + '…'
+                                    : q.question_text %>
+                        </td>
+                        <td><span class="admin-badge"><%= q.correct_opt %></span></td>
+
+                        <td>
+                            <% if (q.is_active) { %>
+                                <span class="admin-badge">aktywne</span>
+                            <% } else { %>
+                                <span class="admin-badge" style="background:rgba(107,114,128,.15); color:#374151;">
+                                    ukryte
+                                </span>
+                            <% } %>
+                        </td>
+
+                        <td>
+                            <div class="admin-table-actions">
+                                <a href="/admin/millionaire/questions/<%= q.id %>/edit"
+                                   class="admin-btn-small">Edytuj</a>
+
+                                <form method="post" action="/admin/millionaire/questions/<%= q.id %>/delete"
+                                      onsubmit="return confirm('Na pewno usunąć to pytanie?');">
+                                    <button type="submit" class="admin-btn-small admin-btn-small--danger">Usuń</button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                <% }) %>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- ⬇️⬇️⬇️ PRZYCISK POWROTU PRZENIESIONY NA DOŁ -->
+        <a href="/admin" class="admin-btn admin-btn-secondary"
+           style="display:inline-flex; gap:6px; margin-top:16px;">
+            ← Powrót
+        </a>
+        <!-- ⬆️⬆️⬆️ KONIEC POPRAWKI -->
+
+    </div>
+</div>

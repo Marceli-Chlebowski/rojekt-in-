@@ -2,17 +2,34 @@
 <html lang="pl">
 <head>
     <meta charset="UTF-8">
-    <title>CryptoEdu</title>
+    <title>Artykuły • CryptoEdu</title>
     <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
-<h2>Artykuły</h2>
+
+<a href="/" class="back-link" style="margin-bottom: 16px; display:inline-flex;">
+    <span class="arrow">←</span>
+    Powrót do strony głównej
+</a>
+
+<h2 class="section-title">Artykuły</h2>
 
 <div class="articles-grid">
     <% articles.forEach(a => { %>
         <a href="/articles/<%= a.id %>" class="article-card">
+
+            <% if (a.image_url) { %>
+                <div class="article-card-thumb">
+                    <img src="<%= a.image_url %>" alt="<%= a.title %>">
+                </div>
+            <% } %>
+
             <h3><%= a.title %></h3>
-            <small><%= new Date(a.created_at).toLocaleDateString() %></small>
+
+            <small class="muted">
+                <%= new Date(a.created_at).toLocaleDateString('pl-PL') %>
+            </small>
+
             <p><%= a.summary %></p>
         </a>
     <% }) %>

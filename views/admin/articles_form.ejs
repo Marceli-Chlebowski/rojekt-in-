@@ -1,0 +1,72 @@
+<div class="admin-page">
+    <div class="admin-card admin-card--wide">
+        <div class="admin-breadcrumb">
+            <a href="/admin">Panel admina</a> ›
+            <a href="/admin/articles">Artykuły</a> ›
+            <span><%= article ? 'Edycja artykułu' : 'Nowy artykuł' %></span>
+        </div>
+
+        <h1 class="admin-title">
+            <%= article ? 'Edytuj artykuł' : 'Dodaj artykuł' %>
+        </h1>
+        <p class="admin-subtitle">
+            Uzupełnij tytuł, krótki opis, opcjonalny URL obrazka oraz pełną treść artykułu.
+        </p>
+
+        <form method="post" action="<%= action %>">
+            <div class="admin-form-group">
+                <label class="admin-form-label">Tytuł:</label>
+                <input
+                        type="text"
+                        name="title"
+                        class="admin-input"
+                        required
+                        value="<%= article ? article.title : '' %>"
+                >
+            </div>
+
+            <div class="admin-form-group">
+                <label class="admin-form-label">Krótki opis (summary):</label>
+                <textarea
+                        name="summary"
+                        class="admin-textarea"
+                        rows="2"
+                ><%= article ? (article.summary || '') : '' %></textarea>
+            </div>
+
+            <div class="admin-form-group">
+                <label class="admin-form-label">URL obrazka (opcjonalnie):</label>
+                <input
+                        type="text"
+                        name="image_url"
+                        class="admin-input"
+                        placeholder="/images/articles/example.png"
+                        value="<%= article && article.image_url ? article.image_url : '' %>"
+                >
+                <% if (article && article.image_url) { %>
+                    <p class="admin-subtitle" style="margin-top:6px;">
+                        Aktualny obrazek:
+                        <code><%= article.image_url %></code>
+                    </p>
+                <% } %>
+            </div>
+
+            <div class="admin-form-group">
+                <label class="admin-form-label">Treść artykułu:</label>
+                <textarea
+                        name="content"
+                        class="admin-textarea"
+                        rows="12"
+                        required
+                ><%= article ? (article.content || '') : '' %></textarea>
+            </div>
+
+            <div style="margin-top: 20px; display:flex; gap:10px; flex-wrap:wrap;">
+                <button type="submit" class="admin-btn admin-btn-primary">
+                    <%= article ? 'Zapisz zmiany' : 'Dodaj artykuł' %>
+                </button>
+                <a href="/admin/articles" class="admin-btn admin-btn-secondary">Anuluj</a>
+            </div>
+        </form>
+    </div>
+</div>

@@ -1,0 +1,43 @@
+<div class="millionaire-wrapper">
+    <div class="millionaire-card">
+        <h1 class="millionaire-title">🏆 Millionaire Leaderboard</h1>
+        <p class="millionaire-subtitle">
+            Best results in the Millionaire game.
+        </p>
+
+        <div class="admin-table-wrapper">
+            <table class="admin-table">
+                <thead>
+                <tr>
+                    <th>#</th>
+                    <th>User</th>
+                    <th>Best score</th>
+                    <th>Best prize</th>
+                    <th>Last played</th>
+                </tr>
+                </thead>
+                <tbody>
+                <% if (!rows.length) { %>
+                    <tr>
+                        <td colspan="5">No results yet. Be the first!</td>
+                    </tr>
+                <% } %>
+                <% rows.forEach((row, idx) => { %>
+                    <tr>
+                        <td><%= idx + 1 %></td>
+                        <td><%= row.username || row.email || 'Anonymous' %></td>
+                        <td><%= row.best_score %> / 10</td>
+                        <td><%= row.best_amount.toLocaleString('pl-PL') %> $</td>
+                        <td><%= row.last_played.toLocaleString('pl-PL') %></td>
+                    </tr>
+                <% }) %>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="millionaire-actions" style="margin-top: 20px;">
+            <a href="/millionaire/start" class="btn">▶️ Play</a>
+            <a href="/millionaire" class="btn btn-outline">Back to start</a>
+        </div>
+    </div>
+</div>

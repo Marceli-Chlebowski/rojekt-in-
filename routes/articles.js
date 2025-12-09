@@ -1,37 +1,89 @@
 const express = require('express');
 const router = express.Router();
-const pool = require('../config/db'); // pool MySQL do zapytań
+const pool = require('../config/db');
+
+// middleware: wymagamy logowania do komentarzy
+function requireUser(req, res, next) {
+    if (req.session && req.session.user) return next();
+    req.flash('error', 'Musisz być zalogowany, aby dodać komentarz.');
+    return res.redirect('/auth/login');
+}
+
+/* ============================
+   LISTA ARTYKUŁÓW
+============================ */
 
 router.get('/', async (req, res) => {
     try {
-        const [rows] = await pool.execute(
-            'SELECT id, title, summary, created_at FROM articles ORDER BY created_at DESC'
+        const [articles] = await pool.query(
+            'SELECT id, title, summary, image_url, created_at FROM articles ORDER BY created_at DESC'
         );
-        res.render('articles', { articles: rows || [] });
+
+        res.render('articles', { articles });
     } catch (err) {
         console.error(err);
-        req.flash('error', 'Błąd pobierania artykułów');
-        res.redirect('/');
+        res.status(500).send('Błąd ładowania artykułów');
     }
 });
 
-// Pojedynczy artykuł
+/* ============================
+   SZCZEGÓŁ ARTYKUŁU
+============================ */
+
 router.get('/:id', async (req, res) => {
     const articleId = req.params.id;
+
+    const [[article]] = await pool.query(
+        'SELECT * FROM articles WHERE id = ?',
+        [articleId]
+    );
+
+    if (!article) return res.status(404).send('Nie znaleziono artykułu');
+
+    const [comments] = await pool.query(
+        `SELECT c.*, u.username 
+         FROM article_comments c
+         JOIN users u ON u.id = c.user_id
+         WHERE c.article_id = ?
+         ORDER BY c.created_at DESC`,
+        [articleId]
+    );
+
+    res.render('article_detail', {
+        article,
+        comments,
+        user: req.session.user || null
+    });
+});
+
+
+/* ============================
+   DODAWANIE KOMENTARZA
+============================ */
+
+router.post('/:id/comments', requireUser, async (req, res) => {
+    const articleId = req.params.id;
+    const { content } = req.body;
+    const userId = req.session.user.id;
+
+    if (!content || !content.trim()) {
+        req.flash('error', 'Komentarz nie może być pusty.');
+        return res.redirect('/articles/' + articleId);
+    }
+
     try {
-        const [rows] = await pool.execute(
-            'SELECT id, title, summary, content, created_at FROM articles WHERE id = ?',
-            [articleId]
+        await pool.query(
+            'INSERT INTO article_comments (article_id, user_id, content) VALUES (?, ?, ?)',
+            [articleId, userId, content.trim()]
         );
-        if (rows.length === 0) {
-            req.flash('error', 'Artykuł nie został znaleziony');
-            return res.redirect('/articles');
-        }
-        res.render('article_detail', { article: rows[0] });
+
+        req.flash('success', 'Dodano komentarz.');
+        res.redirect('/articles/' + articleId);
+
     } catch (err) {
         console.error(err);
-        req.flash('error', 'Błąd pobierania artykułu');
-        res.redirect('/articles');
+        req.flash('error', 'Błąd podczas dodawania komentarza.');
+        res.redirect('/articles/' + articleId);
     }
 });
 
