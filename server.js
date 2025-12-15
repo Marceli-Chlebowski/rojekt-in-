@@ -124,8 +124,10 @@ app.get('/', async (req, res) => {
         const totalPages = Math.max(1, Math.ceil(totalResults / perPage));
 
         rows.forEach(c => {
-            if (typeof c.price_change_percentage_24h !== 'number') c.price_change_percentage_24h = 0;
+            c.price_change_percentage_24h = Number(c.price_change_percentage_24h ?? 0);
+            if (Number.isNaN(c.price_change_percentage_24h)) c.price_change_percentage_24h = 0;
         });
+
 
         res.render('index', {
             cryptos: rows,
