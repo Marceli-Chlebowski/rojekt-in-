@@ -51,6 +51,7 @@ app.use('/admin', adminRouter);
 // Routery
 app.use('/auth', require('./routes/auth'));
 app.use('/favorites', require('./routes/favorites'));
+app.use('/tax', require('./routes/tax'));
 
 // EDUKACJA: quizy i artykuły
 app.use('/quiz', require('./routes/quiz'));

@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <title>Kalkulator podatkowy | CryptoEdu</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+
+<main>
+    <h2 class="section-title">Kalkulator podatkowy – kryptowaluty</h2>
+    <p class="lead">
+        Oblicz należny podatek od zysków z kryptowalut na podstawie kraju,
+        okresu posiadania oraz obowiązujących stawek.
+    </p>
+
+    <!-- FORMULARZ -->
+    <form method="POST" action="/tax/calculate" class="form-card">
+
+        <label>Data zakupu</label>
+        <input type="date" name="buy_date" required
+               value="<%= form.buy_date || '' %>">
+
+        <label>Data sprzedaży</label>
+        <input type="date" name="sell_date" required
+               value="<%= form.sell_date || '' %>">
+
+        <label>Cena zakupu (PLN)</label>
+        <input type="number" step="0.01" name="buy_price" required
+               value="<%= form.buy_price || '' %>">
+
+        <label>Cena sprzedaży (PLN)</label>
+        <input type="number" step="0.01" name="sell_price" required
+               value="<%= form.sell_price || '' %>">
+
+        <label>Ilość kryptowaluty</label>
+        <input type="number" step="0.000001" name="amount" required
+               value="<%= form.amount || '' %>">
+
+        <label>Kraj rozliczenia podatkowego</label>
+        <select name="country_code" required>
+            <% countries.forEach(c => { %>
+                <option value="<%= c.country_code %>"
+                        <%= form.country_code === c.country_code ? 'selected' : '' %>>
+                    <%= c.country_name %>
+                </option>
+            <% }) %>
+        </select>
+
+        <div class="form-actions">
+            <button class="btn" type="submit">Oblicz podatek</button>
+        </div>
+    </form>
+
+    <!-- WYNIK -->
+    <% if (result) { %>
+        <div class="card" style="margin-top: 24px;">
+            <h3>Wynik kalkulacji</h3>
+
+            <p>
+                Okres posiadania:
+                <strong><%= result.holdingDays %> dni</strong>
+            </p>
+
+            <p>
+                Zysk:
+                <strong><%= result.profit.toFixed(2) %> PLN</strong>
+            </p>
+
+            <p>
+                Zastosowana stawka podatku:
+                <strong><%= result.taxRate %>%</strong>
+                <% if (result.isLongTerm) { %>
+                    <span class="muted">(ulga długoterminowa)</span>
+                <% } %>
+            </p>
+
+            <p style="font-size: 18px;">
+                Podatek do zapłaty:
+                <strong><%= result.taxDue.toFixed(2) %> PLN</strong>
+            </p>
+        </div>
+    <% } %>
+
+</main>
+
+</body>
+</html>
