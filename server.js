@@ -11,7 +11,8 @@ const PORT = process.env.PORT || 3000;
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 
 const fetchWithRetry = async (url, opts = {}, maxRetries = 4, initialDelay = 2000) => {
-    let lastErr; let delay = initialDelay;
+    let lastErr;
+    let delay = initialDelay;
     for (let i = 0; i < maxRetries; i++) {
         try { return await axios.get(url, opts); }
         catch (err) {
@@ -29,32 +30,59 @@ const fetchWithRetry = async (url, opts = {}, maxRetries = 4, initialDelay = 200
     throw lastErr;
 };
 
-// --- Cache top 100 kryptowalut ---
-let cryptoCache = { data: [], updatedAt: 0, ttlMs: 2 * 60 * 1000 };
-app.locals.cryptoCache = cryptoCache;
+// --- Aktualizacja kryptowalut w bazie co 2 minuty ---
+const updateCryptosInDB = async () => {
+    try {
+        const url = 'https://api.coingecko.com/api/v3/coins/markets';
+        const opts = {
+            params: { vs_currency: 'usd', order: 'market_cap_desc', per_page: 100, page: 1, sparkline: false },
+            timeout: 10000
+        };
+        const res = await fetchWithRetry(url, opts, 4, 2000);
+        if (!Array.isArray(res.data)) throw new Error('Nieprawidłowa odpowiedź API');
 
-const fetchAllCryptos = async () => {
-    const url = 'https://api.coingecko.com/api/v3/coins/markets';
-    const opts = {
-        params: { vs_currency: 'usd', order: 'market_cap_desc', per_page: 100, page: 1, sparkline: false },
-        timeout: 10000
-    };
-    const res = await fetchWithRetry(url, opts, 4, 2000);
-    if (!Array.isArray(res.data)) throw new Error('Nieprawidłowa odpowiedź API');
-    cryptoCache.data = res.data;
-    cryptoCache.updatedAt = Date.now();
-    app.locals.cryptoCache = cryptoCache;
-    return res.data;
+        const cryptos = res.data;
+
+        // Insert or update each crypto in DB
+        const queries = cryptos.map(c => {
+            return pool.query(
+                `INSERT INTO cryptocurrencies (id, symbol, name, image, current_price, market_cap, market_cap_rank, total_volume, price_change_percentage_24h)
+                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                     ON DUPLICATE KEY UPDATE
+                                          symbol = VALUES(symbol),
+                                          name = VALUES(name),
+                                          image = VALUES(image),
+                                          current_price = VALUES(current_price),
+                                          market_cap = VALUES(market_cap),
+                                          market_cap_rank = VALUES(market_cap_rank),
+                                          total_volume = VALUES(total_volume),
+                                          price_change_percentage_24h = VALUES(price_change_percentage_24h)`,
+                [
+                    c.id,
+                    c.symbol,
+                    c.name,
+                    c.image,
+                    c.current_price,
+                    c.market_cap,
+                    c.market_cap_rank,
+                    c.total_volume,
+                    c.price_change_percentage_24h
+                ]
+            );
+        });
+
+        await Promise.all(queries);
+        console.log(`[DB] Zaktualizowano ${cryptos.length} kryptowalut.`);
+    } catch (err) {
+        console.warn('Aktualizacja kryptowalut w DB nie powiodła się:', err.message || err);
+    }
 };
 
-const refreshCryptoCache = async () => await fetchAllCryptos();
+// Initial update and set interval
+updateCryptosInDB();
+setInterval(updateCryptosInDB, 2 * 60 * 1000);
 
-setInterval(async () => {
-    try { await refreshCryptoCache(); }
-    catch (err) { console.warn('Odświeżanie cache nie powiodło się:', err.message || err); }
-}, cryptoCache.ttlMs);
-
-// --- Trasy ---
+// --- Strony ---
 // Strona główna z listą/paginacją/wyszukiwaniem + ulubione
 app.get('/', async (req, res) => {
     const page = parseInt(req.query.page) || 1;
@@ -68,39 +96,51 @@ app.get('/', async (req, res) => {
             favoriteIds = favRows.map(r => r.coin_id);
         }
 
-        const age = Date.now() - cryptoCache.updatedAt;
-        if (!cryptoCache.data.length || age > cryptoCache.ttlMs) await refreshCryptoCache();
-
-        let filteredCryptos = cryptoCache.data;
+        // Pobierz kryptowaluty z bazy
+        let query = 'SELECT * FROM cryptocurrencies';
+        let params = [];
         if (search) {
-            filteredCryptos = filteredCryptos.filter(c =>
-                (c.name && c.name.toLowerCase().includes(search)) ||
-                (c.symbol && c.symbol.toLowerCase().includes(search))
-            );
+            query += ' WHERE LOWER(name) LIKE ? OR LOWER(symbol) LIKE ?';
+            const searchParam = `%${search}%`;
+            params.push(searchParam, searchParam);
+        }
+        query += ' ORDER BY market_cap_rank ASC LIMIT ? OFFSET ?';
+        params.push(perPage, (page - 1) * perPage);
+
+        const [rows] = await pool.query(query, params);
+
+        // Pobierz łączną liczbę wyników dla paginacji
+        let totalResults = 0;
+        if (search) {
+            const countQuery = 'SELECT COUNT(*) as count FROM cryptocurrencies WHERE LOWER(name) LIKE ? OR LOWER(symbol) LIKE ?';
+            const [countRows] = await pool.query(countQuery, [`%${search}%`, `%${search}%`]);
+            totalResults = countRows[0].count;
+        } else {
+            const countQuery = 'SELECT COUNT(*) as count FROM cryptocurrencies';
+            const [countRows] = await pool.query(countQuery);
+            totalResults = countRows[0].count;
         }
 
-        const totalResults = filteredCryptos.length;
         const totalPages = Math.max(1, Math.ceil(totalResults / perPage));
-        const paginatedCryptos = filteredCryptos.slice((page - 1) * perPage, page * perPage);
 
-        paginatedCryptos.forEach(c => {
+        rows.forEach(c => {
             if (typeof c.price_change_percentage_24h !== 'number') c.price_change_percentage_24h = 0;
         });
 
         res.render('index', {
-            cryptos: paginatedCryptos,
+            cryptos: rows,
             currentPage: page,
             totalPages,
             search,
             favoriteIds
         });
     } catch (err) {
-        console.error('Błąd pobierania kryptowalut:', err.message || err);
+        console.error('Błąd pobierania kryptowalut z bazy:', err.message || err);
         res.render('index', { cryptos: [], currentPage: 1, totalPages: 1, search: '', favoriteIds: [] });
     }
 });
 
-// Szczegóły
+// Szczegóły kryptowaluty
 app.get('/crypto/:id', async (req, res) => {
     const { id } = req.params;
     const days = req.query.days || 7;
