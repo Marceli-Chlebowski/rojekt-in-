@@ -3,62 +3,59 @@ const express = require('express');
 const router = express.Router();
 const pool = require('../config/db');
 
-// proste dane logowania admina (na potrzeby projektu)
-const ADMIN_LOGIN = process.env.ADMIN_LOGIN || 'admin';
-const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'admin123';
-
-// middleware: wymagamy zalogowania jako admin
+// middleware: wymagamy zalogowania jako ADMIN z bazy (req.session.isAdmin ustawiane przy logowaniu usera)
 function requireAdmin(req, res, next) {
-    if (req.session && req.session.isAdmin) return next();
-    return res.redirect('/admin/login');
+    // nie zalogowany
+    if (!req.session || !req.session.user) {
+        req.flash('error', 'Musisz być zalogowany');
+        return res.redirect('/login'); // alias w app.js przenosi na /auth/login
+    }
+
+    // zalogowany, ale nie admin
+    if (!req.session.isAdmin) {
+        req.flash('error', 'Brak uprawnień administratora');
+        return res.redirect('/');
+    }
+
+    next();
 }
 
 /* ---------- LOGOWANIE ---------- */
 
+// Nie robimy już osobnego logowania do admina.
+// Jeśli ktoś wejdzie na /admin/login → przekieruj na zwykłe logowanie.
 router.get('/login', (req, res) => {
-    res.render('admin/login', { error: null });
+    req.flash('error', 'Zaloguj się kontem administratora');
+    return res.redirect('/login');
 });
 
+// To już niepotrzebne – admin loguje się przez /auth/login
 router.post('/login', (req, res) => {
-    const { username, password } = req.body;
-
-    if (username === ADMIN_LOGIN && password === ADMIN_PASSWORD) {
-        req.session.isAdmin = true;
-        return res.redirect('/admin');
-    }
-
-    res.render('admin/login', { error: 'Zły login lub hasło' });
+    req.flash('error', 'Logowanie do panelu admina odbywa się przez standardowe logowanie.');
+    return res.redirect('/login');
 });
 
+// Wylogowanie admina = standardowe wylogowanie użytkownika
 router.get('/logout', (req, res) => {
-    req.session.destroy(() => {
-        res.redirect('/admin/login');
-    });
+    return res.redirect('/auth/logout');
 });
 
 /* ---------- DASHBOARD ---------- */
 
 router.get('/', requireAdmin, async (req, res) => {
     try {
-        const [articles] = await pool.query(
-            'SELECT COUNT(*) AS cnt FROM articles'
-        );
-        const [quizzes] = await pool.query(
-            'SELECT COUNT(*) AS cnt FROM quizzes'
-        );
-        const [questions] = await pool.query(
-            'SELECT COUNT(*) AS cnt FROM quiz_questions'
-        );
-        // 👇 LICZENIE PYTAŃ MILIONERÓW
-        const [millionaire] = await pool.query(
-            'SELECT COUNT(*) AS cnt FROM millionaire_questions'
-        );
+        const [articles] = await pool.query('SELECT COUNT(*) AS cnt FROM articles');
+        const [quizzes] = await pool.query('SELECT COUNT(*) AS cnt FROM quizzes');
+        const [questions] = await pool.query('SELECT COUNT(*) AS cnt FROM quiz_questions');
+        const [millionaire] = await pool.query('SELECT COUNT(*) AS cnt FROM millionaire_questions');
+        const [taxRules] = await pool.query('SELECT COUNT(*) AS cnt FROM tax_rules');
 
         res.render('admin/dashboard', {
             articlesCount: articles[0].cnt,
             quizzesCount: quizzes[0].cnt,
             questionsCount: questions[0].cnt,
-            millionaireCount: millionaire[0].cnt   // 👈 PRZEKAZUJEMY DO EJS
+            millionaireCount: millionaire[0].cnt,
+            taxRulesCount: taxRules[0].cnt
         });
     } catch (err) {
         console.error(err);
@@ -67,7 +64,6 @@ router.get('/', requireAdmin, async (req, res) => {
 });
 
 /* ---------- ARTYKUŁY (tabela: articles) ---------- */
-
 
 // lista artykułów
 router.get('/articles', requireAdmin, async (req, res) => {
@@ -90,7 +86,7 @@ router.get('/articles/new', requireAdmin, (req, res) => {
     });
 });
 
-// dodawanie artykułu (z obrazkiem)
+// dodawanie artykułu
 router.post('/articles/new', requireAdmin, async (req, res) => {
     const { title, summary, image_url, content } = req.body;
     try {
@@ -123,7 +119,7 @@ router.get('/articles/:id/edit', requireAdmin, async (req, res) => {
     }
 });
 
-// zapis edycji (tekst + obrazek)
+// zapis edycji
 router.post('/articles/:id/edit', requireAdmin, async (req, res) => {
     const { title, summary, image_url, content } = req.body;
     try {
@@ -140,7 +136,7 @@ router.post('/articles/:id/edit', requireAdmin, async (req, res) => {
     }
 });
 
-// usuwanie artykułu (razem z komentarzami – dzięki ON DELETE CASCADE)
+// usuwanie artykułu
 router.post('/articles/:id/delete', requireAdmin, async (req, res) => {
     try {
         await pool.query('DELETE FROM articles WHERE id = ?', [req.params.id]);
@@ -152,7 +148,6 @@ router.post('/articles/:id/delete', requireAdmin, async (req, res) => {
         res.redirect('/admin/articles');
     }
 });
-
 
 /* ---------- QUIZY (tabela: quizzes) ---------- */
 
@@ -268,15 +263,7 @@ router.get('/quizzes/:quizId/questions/new', requireAdmin, async (req, res) => {
 // dodanie pytania
 router.post('/quizzes/:quizId/questions/new', requireAdmin, async (req, res) => {
     const quizId = req.params.quizId;
-    const {
-        question_text,
-        opt_a,
-        opt_b,
-        opt_c,
-        opt_d,
-        correct_opt,
-        level
-    } = req.body;
+    const { question_text, opt_a, opt_b, opt_c, opt_d, correct_opt, level } = req.body;
 
     try {
         await pool.query(
@@ -316,15 +303,7 @@ router.get('/questions/:id/edit', requireAdmin, async (req, res) => {
 
 // zapis edycji pytania
 router.post('/questions/:id/edit', requireAdmin, async (req, res) => {
-    const {
-        question_text,
-        opt_a,
-        opt_b,
-        opt_c,
-        opt_d,
-        correct_opt,
-        level
-    } = req.body;
+    const { question_text, opt_a, opt_b, opt_c, opt_d, correct_opt, level } = req.body;
 
     try {
         const [[oldQuestion]] = await pool.query(
@@ -400,21 +379,9 @@ router.get('/millionaire/questions/new', requireAdmin, (req, res) => {
 // Zapis nowego pytania + 50/50 + Audience
 router.post('/millionaire/questions/new', requireAdmin, async (req, res) => {
     const {
-        question_text,
-        opt_a,
-        opt_b,
-        opt_c,
-        opt_d,
-        correct_opt,
-        is_active,
-        hide_a,
-        hide_b,
-        hide_c,
-        hide_d,
-        perc_a,
-        perc_b,
-        perc_c,
-        perc_d
+        question_text, opt_a, opt_b, opt_c, opt_d, correct_opt, is_active,
+        hide_a, hide_b, hide_c, hide_d,
+        perc_a, perc_b, perc_c, perc_d
     } = req.body;
 
     const active = is_active === 'on' ? 1 : 0;
@@ -429,12 +396,7 @@ router.post('/millionaire/questions/new', requireAdmin, async (req, res) => {
 
         const qId = result.insertId;
 
-        const hide = {
-            A: hide_a ? 1 : 0,
-            B: hide_b ? 1 : 0,
-            C: hide_c ? 1 : 0,
-            D: hide_d ? 1 : 0
-        };
+        const hide = { A: hide_a ? 1 : 0, B: hide_b ? 1 : 0, C: hide_c ? 1 : 0, D: hide_d ? 1 : 0 };
         hide[correct_opt] = 0;
 
         await pool.query(
@@ -448,13 +410,7 @@ router.post('/millionaire/questions/new', requireAdmin, async (req, res) => {
             `INSERT INTO millionaire_hints
                  (question_id, hint_type, perc_a, perc_b, perc_c, perc_d)
              VALUES (?, 'AUDIENCE', ?, ?, ?, ?)`,
-            [
-                qId,
-                perc_a || null,
-                perc_b || null,
-                perc_c || null,
-                perc_d || null
-            ]
+            [qId, perc_a || null, perc_b || null, perc_c || null, perc_d || null]
         );
 
         req.flash('success', 'Dodano pytanie Milionerów');
@@ -511,21 +467,9 @@ router.post('/millionaire/questions/:id/edit', requireAdmin, async (req, res) =>
     const id = req.params.id;
 
     const {
-        question_text,
-        opt_a,
-        opt_b,
-        opt_c,
-        opt_d,
-        correct_opt,
-        is_active,
-        hide_a,
-        hide_b,
-        hide_c,
-        hide_d,
-        perc_a,
-        perc_b,
-        perc_c,
-        perc_d
+        question_text, opt_a, opt_b, opt_c, opt_d, correct_opt, is_active,
+        hide_a, hide_b, hide_c, hide_d,
+        perc_a, perc_b, perc_c, perc_d
     } = req.body;
 
     const active = is_active === 'on' ? 1 : 0;
@@ -538,19 +482,10 @@ router.post('/millionaire/questions/:id/edit', requireAdmin, async (req, res) =>
             [question_text, opt_a, opt_b, opt_c, opt_d, correct_opt, active, id]
         );
 
-        const hide = {
-            A: hide_a ? 1 : 0,
-            B: hide_b ? 1 : 0,
-            C: hide_c ? 1 : 0,
-            D: hide_d ? 1 : 0
-        };
+        const hide = { A: hide_a ? 1 : 0, B: hide_b ? 1 : 0, C: hide_c ? 1 : 0, D: hide_d ? 1 : 0 };
         hide[correct_opt] = 0;
 
-        await pool.query(
-            'DELETE FROM millionaire_hints WHERE question_id = ? AND hint_type = "FIFTY"',
-            [id]
-        );
-
+        await pool.query('DELETE FROM millionaire_hints WHERE question_id = ? AND hint_type = "FIFTY"', [id]);
         await pool.query(
             `INSERT INTO millionaire_hints
                  (question_id, hint_type, hide_a, hide_b, hide_c, hide_d)
@@ -558,22 +493,12 @@ router.post('/millionaire/questions/:id/edit', requireAdmin, async (req, res) =>
             [id, hide.A, hide.B, hide.C, hide.D]
         );
 
-        await pool.query(
-            'DELETE FROM millionaire_hints WHERE question_id = ? AND hint_type = "AUDIENCE"',
-            [id]
-        );
-
+        await pool.query('DELETE FROM millionaire_hints WHERE question_id = ? AND hint_type = "AUDIENCE"', [id]);
         await pool.query(
             `INSERT INTO millionaire_hints
                  (question_id, hint_type, perc_a, perc_b, perc_c, perc_d)
              VALUES (?, 'AUDIENCE', ?, ?, ?, ?)`,
-            [
-                id,
-                perc_a || null,
-                perc_b || null,
-                perc_c || null,
-                perc_d || null
-            ]
+            [id, perc_a || null, perc_b || null, perc_c || null, perc_d || null]
         );
 
         req.flash('success', 'Zaktualizowano pytanie Milionerów');
@@ -589,7 +514,6 @@ router.post('/millionaire/questions/:id/edit', requireAdmin, async (req, res) =>
 router.post('/millionaire/questions/:id/delete', requireAdmin, async (req, res) => {
     const id = req.params.id;
     try {
-        // sprawdzamy, czy pytanie jest aktywne
         const [[question]] = await pool.query(
             'SELECT is_active FROM millionaire_questions WHERE id = ?',
             [id]
@@ -600,12 +524,10 @@ router.post('/millionaire/questions/:id/delete', requireAdmin, async (req, res) 
             return res.redirect('/admin/millionaire/questions');
         }
 
-        // liczymy ile jest AKTYWNYCH pytań
         const [[{ count: activeCount }]] = await pool.query(
             'SELECT COUNT(*) AS count FROM millionaire_questions WHERE is_active = 1'
         );
 
-        // jeśli chcemy usunąć aktywne, a jest 10 lub mniej → blokujemy
         if (question.is_active && activeCount <= 10) {
             req.flash(
                 'error',
@@ -625,7 +547,6 @@ router.post('/millionaire/questions/:id/delete', requireAdmin, async (req, res) 
 
 /* ---------- KOMENTARZE DO ARTYKUŁÓW (article_comments) ---------- */
 
-// lista komentarzy pod artykułem
 router.get('/articles/:id/comments', requireAdmin, async (req, res) => {
     const articleId = req.params.id;
 
@@ -642,17 +563,13 @@ router.get('/articles/:id/comments', requireAdmin, async (req, res) => {
         const [comments] = await pool.query(
             `SELECT c.id, c.content, c.created_at, u.username
              FROM article_comments c
-             JOIN users u ON u.id = c.user_id
+                      JOIN users u ON u.id = c.user_id
              WHERE c.article_id = ?
              ORDER BY c.created_at DESC`,
             [articleId]
         );
 
-        // 👇 ważne: nazwa widoku pasuje do pliku views/admin/article_comments.ejs
-        res.render('admin/article_comments', {
-            article,
-            comments
-        });
+        res.render('admin/article_comments', { article, comments });
     } catch (err) {
         console.error(err);
         req.flash('error', 'Błąd pobierania komentarzy');
@@ -660,7 +577,6 @@ router.get('/articles/:id/comments', requireAdmin, async (req, res) => {
     }
 });
 
-// usuwanie komentarza
 router.post('/articles/:articleId/comments/:commentId/delete', requireAdmin, async (req, res) => {
     const { articleId, commentId } = req.params;
 
@@ -678,5 +594,173 @@ router.post('/articles/:articleId/comments/:commentId/delete', requireAdmin, asy
     res.redirect(`/admin/articles/${articleId}/comments`);
 });
 
-module.exports = router;
+/* ---------- PODATKI (tabela: tax_rules) ---------- */
 
+// lista reguł podatkowych
+router.get('/tax-rules', requireAdmin, async (req, res) => {
+    try {
+        const [rows] = await pool.query(
+            `SELECT id, country_code, country_name, tax_rate, long_term_rate, long_term_days, created_at
+             FROM tax_rules
+             ORDER BY country_name ASC`
+        );
+        res.render('admin/tax_rules_list', { rules: rows });
+    } catch (err) {
+        console.error(err);
+        req.flash('error', 'Błąd pobierania reguł podatkowych');
+        res.redirect('/admin');
+    }
+});
+
+// formularz dodawania
+router.get('/tax-rules/new', requireAdmin, (req, res) => {
+    res.render('admin/tax_rule_form', {
+        rule: null,
+        action: '/admin/tax-rules/new'
+    });
+});
+
+// dodanie
+router.post('/tax-rules/new', requireAdmin, async (req, res) => {
+    try {
+        let { country_code, country_name, tax_rate, long_term_rate, long_term_days } = req.body;
+
+        country_code = (country_code || '').trim().toUpperCase();
+        country_name = (country_name || '').trim();
+
+        if (!country_code || !country_name || tax_rate === undefined || tax_rate === '') {
+            req.flash('error', 'Uzupełnij: kod kraju, nazwę kraju i stawkę podatku.');
+            return res.redirect('/admin/tax-rules/new');
+        }
+
+        const taxRate = Number(tax_rate);
+        const longRate = (long_term_rate === '' || long_term_rate == null) ? null : Number(long_term_rate);
+        const longDays = (long_term_days === '' || long_term_days == null) ? null : parseInt(long_term_days, 10);
+
+        if (Number.isNaN(taxRate) || taxRate < 0) {
+            req.flash('error', 'Stawka podatku musi być liczbą >= 0.');
+            return res.redirect('/admin/tax-rules/new');
+        }
+        if (longRate != null && (Number.isNaN(longRate) || longRate < 0)) {
+            req.flash('error', 'Długoterminowa stawka musi być liczbą >= 0.');
+            return res.redirect('/admin/tax-rules/new');
+        }
+        if (longDays != null && (Number.isNaN(longDays) || longDays < 0)) {
+            req.flash('error', 'Dni długoterminowe muszą być liczbą całkowitą >= 0.');
+            return res.redirect('/admin/tax-rules/new');
+        }
+
+        await pool.query(
+            `INSERT INTO tax_rules (country_code, country_name, tax_rate, long_term_rate, long_term_days)
+             VALUES (?, ?, ?, ?, ?)`,
+            [country_code, country_name, taxRate, longRate, longDays]
+        );
+
+        req.flash('success', 'Dodano regułę podatkową');
+        res.redirect('/admin/tax-rules');
+    } catch (err) {
+        console.error(err);
+        req.flash('error', 'Błąd dodawania reguły podatkowej (sprawdź czy kod kraju nie jest zdublowany)');
+        res.redirect('/admin/tax-rules');
+    }
+});
+
+// formularz edycji
+router.get('/tax-rules/:id/edit', requireAdmin, async (req, res) => {
+    try {
+        const [[rule]] = await pool.query(
+            `SELECT id, country_code, country_name, tax_rate, long_term_rate, long_term_days
+             FROM tax_rules WHERE id = ?`,
+            [req.params.id]
+        );
+
+        if (!rule) {
+            req.flash('error', 'Nie znaleziono reguły podatkowej');
+            return res.redirect('/admin/tax-rules');
+        }
+
+        res.render('admin/tax_rule_form', {
+            rule,
+            action: `/admin/tax-rules/${rule.id}/edit`
+        });
+    } catch (err) {
+        console.error(err);
+        req.flash('error', 'Błąd pobierania reguły do edycji');
+        res.redirect('/admin/tax-rules');
+    }
+});
+
+// zapis edycji
+router.post('/tax-rules/:id/edit', requireAdmin, async (req, res) => {
+    try {
+        let { country_code, country_name, tax_rate, long_term_rate, long_term_days } = req.body;
+
+        country_code = (country_code || '').trim().toUpperCase();
+        country_name = (country_name || '').trim();
+
+        if (!country_code || !country_name || tax_rate === undefined || tax_rate === '') {
+            req.flash('error', 'Uzupełnij: kod kraju, nazwę kraju i stawkę podatku.');
+            return res.redirect(`/admin/tax-rules/${req.params.id}/edit`);
+        }
+
+        const taxRate = Number(tax_rate);
+        const longRate = (long_term_rate === '' || long_term_rate == null) ? null : Number(long_term_rate);
+        const longDays = (long_term_days === '' || long_term_days == null) ? null : parseInt(long_term_days, 10);
+
+        if (Number.isNaN(taxRate) || taxRate < 0) {
+            req.flash('error', 'Stawka podatku musi być liczbą >= 0.');
+            return res.redirect(`/admin/tax-rules/${req.params.id}/edit`);
+        }
+
+        await pool.query(
+            `UPDATE tax_rules
+             SET country_code = ?, country_name = ?, tax_rate = ?, long_term_rate = ?, long_term_days = ?
+             WHERE id = ?`,
+            [country_code, country_name, taxRate, longRate, longDays, req.params.id]
+        );
+
+        req.flash('success', 'Zapisano zmiany reguły podatkowej');
+        res.redirect('/admin/tax-rules');
+    } catch (err) {
+        console.error(err);
+        req.flash('error', 'Błąd zapisu zmian reguły podatkowej');
+        res.redirect('/admin/tax-rules');
+    }
+});
+
+// usuwanie (z blokadą jeśli są obliczenia dla tego kraju)
+router.post('/tax-rules/:id/delete', requireAdmin, async (req, res) => {
+    try {
+        const [[rule]] = await pool.query(
+            'SELECT country_code FROM tax_rules WHERE id = ?',
+            [req.params.id]
+        );
+
+        if (!rule) {
+            req.flash('error', 'Nie znaleziono reguły podatkowej');
+            return res.redirect('/admin/tax-rules');
+        }
+
+        // jeśli masz tabelę tax_calculations (u Ciebie jest) – blokujemy usuwanie, jeśli były użycia
+        const [[{ cnt }]] = await pool.query(
+            'SELECT COUNT(*) AS cnt FROM tax_calculations WHERE country_code = ?',
+            [rule.country_code]
+        );
+
+        if (cnt > 0) {
+            req.flash('error', 'Nie można usunąć — istnieją obliczenia podatku dla tego kraju.');
+            return res.redirect('/admin/tax-rules');
+        }
+
+        await pool.query('DELETE FROM tax_rules WHERE id = ?', [req.params.id]);
+        req.flash('success', 'Usunięto regułę podatkową');
+        res.redirect('/admin/tax-rules');
+    } catch (err) {
+        console.error(err);
+        req.flash('error', 'Błąd usuwania reguły podatkowej');
+        res.redirect('/admin/tax-rules');
+    }
+});
+
+
+module.exports = router;

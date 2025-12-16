@@ -4,13 +4,13 @@
         <div class="millionaire-card millionaire-question-card">
             <div class="millionaire-header-row">
                 <div>
-                    <h1 class="millionaire-title">Milionaire</h1>
+                    <h1 class="millionaire-title">Milionerzy</h1>
                     <p class="millionaire-subtitle">
-                        Question <strong><%= index %></strong> / <%= total %>
+                        Pytanie <strong><%= index %></strong> / <%= total %>
                     </p>
                 </div>
                 <div class="millionaire-current-prize">
-                    Current prize:
+                    Aktualna wygrana:
                     <span><%= currentPrize.toLocaleString('pl-PL') %> $</span>
                 </div>
             </div>
@@ -33,7 +33,7 @@
                             class="millionaire-lifeline-btn"
                             <%= lifelines.audienceUsed ? 'disabled' : '' %>
                     >
-                        👥 Audience
+                        👥 Publiczność
                     </button>
                 </form>
             </div>
@@ -59,7 +59,7 @@
                 <%= question.question_text %>
             </div>
 
-            <!-- ODPOWIEDZI – klasyczny formularz -->
+            <!-- ODPOWIEDZI -->
             <form method="post" action="/millionaire/answer">
                 <div class="millionaire-options">
                     <% const hidden = hiddenOptions || []; %>
@@ -88,7 +88,7 @@
 
         <!-- PRAWA STRONA – DRABINA NAGRÓD -->
         <aside class="millionaire-ladder-card">
-            <h3>Prize ladder</h3>
+            <h3>Drabina nagród</h3>
             <ul class="millionaire-ladder">
                 <% for (let i = prizeLadder.length - 1; i >= 0; i--) {
                     const level = i + 1;

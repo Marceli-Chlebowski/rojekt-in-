@@ -1,28 +1,28 @@
 <div class="millionaire-wrapper">
     <div class="millionaire-card">
-        <h1 class="millionaire-title">Game Over</h1>
+        <h1 class="millionaire-title">Koniec gry</h1>
 
         <p class="millionaire-subtitle">
-            Correct answers: <strong><%= score %> / <%= total %></strong>
+            Poprawne odpowiedzi: <strong><%= score %> / <%= total %></strong>
         </p>
 
         <p class="lead">
-            Your prize:
+            Twoja wygrana:
             <strong><%= earnedPrize.toLocaleString('pl-PL') %> $</strong>
         </p>
 
         <% if (score === total) { %>
-            <p class="muted">Congratulations! You got the full prize 🎉</p>
+            <p class="muted">Gratulacje! Zdobywasz pełną pulę 🎉</p>
         <% } else if (score === 0) { %>
-            <p class="muted">This time it didn’t work out. Try again!</p>
+            <p class="muted">Tym razem się nie udało. Spróbuj ponownie!</p>
         <% } else { %>
-            <p class="muted">Not bad! You can always improve your score.</p>
+            <p class="muted">Nieźle! Zawsze możesz poprawić swój wynik.</p>
         <% } %>
 
         <div class="millionaire-actions" style="margin-top: 24px;">
-            <a href="/millionaire/start" class="btn">▶️ Play again</a>
-            <a href="/millionaire/leaderboard" class="btn btn-outline">🏆 Leaderboard</a>
-            <a href="/" class="btn btn-outline">Home</a>
+            <a href="/millionaire/start" class="btn">▶️ Zagraj ponownie</a>
+            <a href="/millionaire/leaderboard" class="btn btn-outline">🏆 Ranking</a>
+            <a href="/" class="btn btn-outline">Strona główna</a>
         </div>
     </div>
 </div>

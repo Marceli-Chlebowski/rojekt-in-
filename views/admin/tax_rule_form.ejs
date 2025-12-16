@@ -1,0 +1,42 @@
+<div class="admin-page">
+    <h1><%= rule ? 'Edytuj regułę podatkową' : 'Dodaj regułę podatkową' %></h1>
+
+    <form method="post" action="<%= action %>" class="admin-form">
+        <div class="form-row">
+            <label>Kod kraju (np. PL)</label>
+            <input name="country_code" maxlength="5" required
+                   value="<%= rule ? rule.country_code : '' %>">
+        </div>
+
+        <div class="form-row">
+            <label>Nazwa kraju</label>
+            <input name="country_name" maxlength="100" required
+                   value="<%= rule ? rule.country_name : '' %>">
+        </div>
+
+        <div class="form-row">
+            <label>Stawka podatku (%)</label>
+            <input name="tax_rate" type="number" step="0.01" min="0" required
+                   value="<%= rule ? rule.tax_rate : '' %>">
+        </div>
+
+        <hr style="margin:16px 0;">
+
+        <div class="form-row">
+            <label>Długoterminowa stawka (%) (opcjonalnie)</label>
+            <input name="long_term_rate" type="number" step="0.01" min="0"
+                   value="<%= rule && rule.long_term_rate != null ? rule.long_term_rate : '' %>">
+        </div>
+
+        <div class="form-row">
+            <label>Liczba dni do stawki długoterminowej (opcjonalnie)</label>
+            <input name="long_term_days" type="number" step="1" min="0"
+                   value="<%= rule && rule.long_term_days != null ? rule.long_term_days : '' %>">
+        </div>
+
+        <div style="margin-top:16px;">
+            <button class="btn" type="submit">💾 Zapisz</button>
+            <a class="btn btn-outline" href="/admin/tax-rules">Anuluj</a>
+        </div>
+    </form>
+</div>

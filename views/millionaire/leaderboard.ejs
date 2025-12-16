@@ -1,8 +1,8 @@
 <div class="millionaire-wrapper">
     <div class="millionaire-card">
-        <h1 class="millionaire-title">🏆 Millionaire Leaderboard</h1>
+        <h1 class="millionaire-title">🏆 Ranking Milionerów</h1>
         <p class="millionaire-subtitle">
-            Best results in the Millionaire game.
+            Najlepsze wyniki w grze Milionerzy.
         </p>
 
         <div class="admin-table-wrapper">
@@ -10,22 +10,22 @@
                 <thead>
                 <tr>
                     <th>#</th>
-                    <th>User</th>
-                    <th>Best score</th>
-                    <th>Best prize</th>
-                    <th>Last played</th>
+                    <th>Użytkownik</th>
+                    <th>Najlepszy wynik</th>
+                    <th>Najwyższa wygrana</th>
+                    <th>Ostatnia gra</th>
                 </tr>
                 </thead>
                 <tbody>
                 <% if (!rows.length) { %>
                     <tr>
-                        <td colspan="5">No results yet. Be the first!</td>
+                        <td colspan="5">Brak wyników. Bądź pierwszy!</td>
                     </tr>
                 <% } %>
                 <% rows.forEach((row, idx) => { %>
                     <tr>
                         <td><%= idx + 1 %></td>
-                        <td><%= row.username || row.email || 'Anonymous' %></td>
+                        <td><%= row.username || row.email || 'Anonim' %></td>
                         <td><%= row.best_score %> / 10</td>
                         <td><%= row.best_amount.toLocaleString('pl-PL') %> $</td>
                         <td><%= row.last_played.toLocaleString('pl-PL') %></td>
@@ -36,8 +36,8 @@
         </div>
 
         <div class="millionaire-actions" style="margin-top: 20px;">
-            <a href="/millionaire/start" class="btn">▶️ Play</a>
-            <a href="/millionaire" class="btn btn-outline">Back to start</a>
+            <a href="/millionaire/start" class="btn">▶️ Graj</a>
+            <a href="/millionaire" class="btn btn-outline">Powrót do startu</a>
         </div>
     </div>
 </div>

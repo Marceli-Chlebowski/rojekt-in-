@@ -55,9 +55,10 @@ router.post('/login', async (req, res) => {
         }
 
         const [rows] = await pool.query(
-            'SELECT id, username, password_hash FROM users WHERE email = ? OR username = ? LIMIT 1',
+            'SELECT id, username, password_hash, role FROM users WHERE email = ? OR username = ? LIMIT 1',
             [login, login]
         );
+
         const user = rows[0];
         const ok = user && await bcrypt.compare(password, user.password_hash);
         if (!ok) {
@@ -65,9 +66,10 @@ router.post('/login', async (req, res) => {
         }
 
         req.session.user = { id: user.id, username: user.username };
-        req.session.loggedInAt = new Date().toISOString(); // << zapisz czas logowania
+        req.session.isAdmin = (user.role === 'admin'); // ✅ dopiero po pobraniu usera
+        req.session.loggedInAt = new Date().toISOString();
 
-        console.log('[AUTH] Zalogowano user_id=', user.id);
+        console.log('[AUTH] Zalogowano user_id=', user.id, 'isAdmin=', req.session.isAdmin);
         res.redirect('/');
     } catch (e) {
         console.error('[AUTH][LOGIN] Błąd:', e.code || e.message || e);
@@ -75,11 +77,13 @@ router.post('/login', async (req, res) => {
     }
 });
 
+
 router.post('/logout', (req, res) => {
     req.session.destroy((err) => {
         if (err) console.error('[AUTH][LOGOUT] Błąd destroy sesji:', err?.message || err);
         res.redirect('/');
     });
 });
+
 
 module.exports = router;

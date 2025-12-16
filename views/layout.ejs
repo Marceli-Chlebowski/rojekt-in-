@@ -14,18 +14,39 @@
     <nav class="appbar">
         <div class="menu">
             <a href="/" class="brand">CryptoEdu</a>
-            <a href="/articles">Artykuły</a>
-            <a href="/quiz">Quiz</a>
-            <a
-                    href="/millionaire"
-                    class="<%= (req.originalUrl || '').startsWith('/millionaire') ? 'active' : '' %>"
-            >
-                 Milionerzy
-            </a>
-            <a href="/tax">Kalkulator podatkowy</a>
-            <a href="/favorites">Ulubione</a>
-        </div>
 
+            <a href="/articles"
+               class="<%= (req.originalUrl || '').startsWith('/articles') ? 'active' : '' %>">
+                Artykuły
+            </a>
+
+            <a href="/quiz"
+               class="<%= (req.originalUrl || '').startsWith('/quiz') ? 'active' : '' %>">
+                Quiz
+            </a>
+
+            <a href="/millionaire"
+               class="<%= (req.originalUrl || '').startsWith('/millionaire') ? 'active' : '' %>">
+                Milionerzy
+            </a>
+
+            <a href="/tax"
+               class="<%= (req.originalUrl || '').startsWith('/tax') ? 'active' : '' %>">
+                Kalkulator podatkowy
+            </a>
+
+            <a href="/favorites"
+               class="<%= (req.originalUrl || '').startsWith('/favorites') ? 'active' : '' %>">
+                Ulubione
+            </a>
+
+            <% if (isAdmin) { %>
+                <a href="/admin"
+                   class="<%= (req.originalUrl || '').startsWith('/admin') ? 'active' : '' %>">
+                    Panel Admina
+                </a>
+            <% } %>
+        </div>
         <div class="user">
             <% if (user) { %>
                 <a href="/user/profile">Profil</a>

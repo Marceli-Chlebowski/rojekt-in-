@@ -1,0 +1,46 @@
+<div class="admin-page">
+    <div class="admin-header">
+        <h1>Reguły podatkowe</h1>
+        <a class="btn" href="/admin/tax-rules/new">➕ Dodaj kraj</a>
+    </div>
+
+    <div class="admin-table-wrapper">
+        <table class="admin-table">
+            <thead>
+            <tr>
+                <th>Kod</th>
+                <th>Kraj</th>
+                <th>Podatek (%)</th>
+                <th>Długoterminowy (%)</th>
+                <th>Dni</th>
+                <th>Akcje</th>
+            </tr>
+            </thead>
+            <tbody>
+            <% if (!rules || !rules.length) { %>
+                <tr>
+                    <td colspan="6">Brak reguł podatkowych.</td>
+                </tr>
+            <% } %>
+
+            <% (rules || []).forEach(r => { %>
+                <tr>
+                    <td><%= r.country_code %></td>
+                    <td><%= r.country_name %></td>
+                    <td><%= r.tax_rate %></td>
+                    <td><%= r.long_term_rate ?? '-' %></td>
+                    <td><%= r.long_term_days ?? '-' %></td>
+                    <td style="white-space:nowrap;">
+                        <a class="btn btn-outline" href="/admin/tax-rules/<%= r.id %>/edit">✏️ Edytuj</a>
+
+                        <form method="post" action="/admin/tax-rules/<%= r.id %>/delete" style="display:inline;"
+                              onsubmit="return confirm('Na pewno usunąć regułę dla: <%= r.country_name %>?');">
+                            <button class="btn btn-danger" type="submit">🗑 Usuń</button>
+                        </form>
+                    </td>
+                </tr>
+            <% }) %>
+            </tbody>
+        </table>
+    </div>
+</div>

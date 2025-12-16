@@ -2,8 +2,17 @@ const express = require('express');
 const router = express.Router();
 const pool = require('../config/db');
 
-// lista wszystkich quizów
-router.get('/', async (req, res) => {
+// middleware – tylko zalogowany (TAK SAMO jak w kalkulatorze)
+function requireLogin(req, res, next) {
+    if (!req.session.user) {
+        req.flash('error', 'Musisz być zalogowany');
+        return res.redirect('/login');
+    }
+    next();
+}
+
+// lista wszystkich quizów – TYLKO ZALOGOWANI (blokuje wejście z paska)
+router.get('/', requireLogin, async (req, res) => {
     try {
         const [quizzes] = await pool.execute('SELECT id, title, description FROM quizzes');
 
@@ -11,10 +20,10 @@ router.get('/', async (req, res) => {
         const [leaderboard] = await pool.execute(`
             SELECT u.username, SUM(qr.score) AS total_score
             FROM quiz_results qr
-            JOIN users u ON qr.user_id = u.id
+                     JOIN users u ON qr.user_id = u.id
             GROUP BY u.id, u.username
             ORDER BY total_score DESC
-            LIMIT 20
+                LIMIT 20
         `);
 
         res.render('quizzes', { quizzes, leaderboard });
@@ -25,8 +34,8 @@ router.get('/', async (req, res) => {
     }
 });
 
-// GET /quiz/:id - pobierz pytania do wybranego quizu
-router.get('/:id', async (req, res) => {
+// GET /quiz/:id - pobierz pytania do wybranego quizu (TYLKO ZALOGOWANI)
+router.get('/:id', requireLogin, async (req, res) => {
     try {
         const quizId = req.params.id;
         const [[quiz]] = await pool.execute('SELECT id, title FROM quizzes WHERE id = ?', [quizId]);
@@ -59,8 +68,8 @@ router.get('/:id', async (req, res) => {
     }
 });
 
-// POST /quiz/:id/submit - ocena odpowiedzi
-router.post('/:id/submit', async (req, res) => {
+// POST /quiz/:id/submit - ocena odpowiedzi (TYLKO ZALOGOWANI)
+router.post('/:id/submit', requireLogin, async (req, res) => {
     try {
         const quizId = req.params.id;
         const answers = Object.keys(req.body)
@@ -97,7 +106,9 @@ router.post('/:id/submit', async (req, res) => {
             });
         }
 
-        const userId = req.session?.user?.id || null;
+        // teraz userId zawsze istnieje, bo requireLogin przepuszcza tylko zalogowanych
+        const userId = req.session.user.id;
+
         const points = correctCount * 100; // 100 punktów za każdą poprawną odpowiedź
         await pool.execute(
             'INSERT INTO quiz_results (user_id, quiz_id, score, total, created_at) VALUES (?, ?, ?, ?, NOW())',
