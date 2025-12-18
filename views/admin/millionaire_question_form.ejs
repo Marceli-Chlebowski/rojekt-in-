@@ -77,7 +77,7 @@
                 <div class="form-row">
                     <div>
                         <label class="admin-form-label">Poprawna odpowiedź:</label>
-                        <select name="correct_opt" class="admin-select" required>
+                        <select name="correct_opt" id="correctOpt" class="admin-select" required>
                             <% const correct = question ? question.correct_opt : 'A'; %>
                             <option value="A" <%= correct === 'A' ? 'selected' : '' %>>A</option>
                             <option value="B" <%= correct === 'B' ? 'selected' : '' %>>B</option>
@@ -111,16 +111,15 @@
                 <div class="admin-fifty-group">
                     <% ['A','B','C','D'].forEach(letter => { %>
                         <% const name = 'hide_' + letter.toLowerCase(); %>
-                        <% const isCorrect = (corr === letter); %>
                         <% const checked =
                                 f && f[name] ? 'checked' : ''; %>
 
-                        <label class="<%= isCorrect ? 'admin-fifty-disabled' : '' %>">
+                        <label>
                             <input type="checkbox"
                                    name="<%= name %>"
                                    value="1"
-                                    <%= checked %>
-                                    <%= isCorrect ? 'disabled' : '' %>>
+                                   data-opt="<%= letter %>"
+                                    <%= checked %>>
                             <span>Ukryj <strong><%= letter %></strong></span>
                         </label>
                     <% }) %>
@@ -191,3 +190,27 @@
 
     </div>
 </div>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const correctSelect = document.getElementById('correctOpt');
+    const checkboxes = document.querySelectorAll('.admin-fifty-group input[type="checkbox"]');
+
+    function updateFiftyState() {
+        const correct = correctSelect.value;
+
+        checkboxes.forEach(cb => {
+            if (cb.dataset.opt === correct) {
+                cb.checked = false;
+                cb.disabled = true;
+                cb.closest('label')?.classList.add('admin-fifty-disabled');
+            } else {
+                cb.disabled = false;
+                cb.closest('label')?.classList.remove('admin-fifty-disabled');
+            }
+        });
+    }
+
+    correctSelect.addEventListener('change', updateFiftyState);
+    updateFiftyState(); // stan początkowy
+});
+</script>

@@ -16,14 +16,18 @@ router.get('/', requireLogin, async (req, res) => {
     try {
         const [quizzes] = await pool.execute('SELECT id, title, description FROM quizzes');
 
-        // Pobierz leaderboard - top 20 użytkowników z najwyższymi sumarycznymi wynikami
+        // Pobierz leaderboard - top 20 użytkowników z najwyższymi sumarycznymi najlepszymi wynikami (tylko najlepszy wynik per quiz)
         const [leaderboard] = await pool.execute(`
-            SELECT u.username, SUM(qr.score) AS total_score
-            FROM quiz_results qr
-                     JOIN users u ON qr.user_id = u.id
+            SELECT u.username, SUM(best.score) AS total_score
+            FROM (
+                     SELECT user_id, quiz_id, MAX(score) AS score
+                     FROM quiz_results
+                     GROUP BY user_id, quiz_id
+                 ) best
+                     JOIN users u ON best.user_id = u.id
             GROUP BY u.id, u.username
             ORDER BY total_score DESC
-                LIMIT 20
+            LIMIT 20
         `);
 
         res.render('quizzes', { quizzes, leaderboard });
@@ -48,6 +52,12 @@ router.get('/:id', requireLogin, async (req, res) => {
             'SELECT id, question_text, opt_a, opt_b, opt_c, opt_d FROM quiz_questions WHERE quiz_id = ? ORDER BY RAND() LIMIT 10',
             [quizId]
         );
+
+        // Wymóg min. 4 pytań w quizie
+        if (questions.length < 4) {
+            req.flash('error', 'Ten quiz nie jest jeszcze kompletny (mniej niż 4 pytania).');
+            return res.redirect('/quiz');
+        }
 
         const formatted = questions.map(q => ({
             id: q.id,
@@ -109,11 +119,20 @@ router.post('/:id/submit', requireLogin, async (req, res) => {
         // teraz userId zawsze istnieje, bo requireLogin przepuszcza tylko zalogowanych
         const userId = req.session.user.id;
 
-        const points = correctCount * 100; // 100 punktów za każdą poprawną odpowiedź
-        await pool.execute(
-            'INSERT INTO quiz_results (user_id, quiz_id, score, total, created_at) VALUES (?, ?, ?, ?, NOW())',
-            [userId, quizId, points, answers.length]
+        const points = correctCount * 100;
+
+        // sprawdź najlepszy wynik usera dla tego quizu
+        const [[best]] = await pool.execute(
+            'SELECT MAX(score) AS bestScore FROM quiz_results WHERE user_id = ? AND quiz_id = ?',
+            [userId, quizId]
         );
+
+        if (!best.bestScore || points > best.bestScore) {
+            await pool.execute(
+                'INSERT INTO quiz_results (user_id, quiz_id, score, total, created_at) VALUES (?, ?, ?, ?, NOW())',
+                [userId, quizId, points, answers.length]
+            );
+        }
 
         res.render('quiz_result', { score: correctCount, total: answers.length, points, breakdown });
     } catch (err) {

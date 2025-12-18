@@ -265,6 +265,17 @@ router.post('/quizzes/:quizId/questions/new', requireAdmin, async (req, res) => 
     const quizId = req.params.quizId;
     const { question_text, opt_a, opt_b, opt_c, opt_d, correct_opt, level } = req.body;
 
+    // Walidacja: 4 odpowiedzi + jedna poprawna
+    if (!question_text || !opt_a || !opt_b || !opt_c || !opt_d) {
+        req.flash('error', 'Musisz podać treść pytania oraz 4 odpowiedzi.');
+        return res.redirect(`/admin/quizzes/${quizId}/questions/new`);
+    }
+
+    if (!['A', 'B', 'C', 'D'].includes(correct_opt)) {
+        req.flash('error', 'Musisz wskazać jedną poprawną odpowiedź (A–D).');
+        return res.redirect(`/admin/quizzes/${quizId}/questions/new`);
+    }
+
     try {
         await pool.query(
             `INSERT INTO quiz_questions
@@ -304,6 +315,17 @@ router.get('/questions/:id/edit', requireAdmin, async (req, res) => {
 // zapis edycji pytania
 router.post('/questions/:id/edit', requireAdmin, async (req, res) => {
     const { question_text, opt_a, opt_b, opt_c, opt_d, correct_opt, level } = req.body;
+
+    // Walidacja: 4 odpowiedzi + jedna poprawna
+    if (!question_text || !opt_a || !opt_b || !opt_c || !opt_d) {
+        req.flash('error', 'Musisz podać treść pytania oraz komplet 4 odpowiedzi.');
+        return res.redirect(`/admin/questions/${req.params.id}/edit`);
+    }
+
+    if (!['A', 'B', 'C', 'D'].includes(correct_opt)) {
+        req.flash('error', 'Musisz wskazać jedną poprawną odpowiedź (A–D).');
+        return res.redirect(`/admin/questions/${req.params.id}/edit`);
+    }
 
     try {
         const [[oldQuestion]] = await pool.query(
@@ -383,6 +405,17 @@ router.post('/millionaire/questions/new', requireAdmin, async (req, res) => {
         hide_a, hide_b, hide_c, hide_d,
         perc_a, perc_b, perc_c, perc_d
     } = req.body;
+
+    // Walidacja: 4 odpowiedzi + jedna poprawna
+    if (!question_text || !opt_a || !opt_b || !opt_c || !opt_d) {
+        req.flash('error', 'Pytanie musi zawierać dokładnie 4 odpowiedzi.');
+        return res.redirect('/admin/millionaire/questions/new');
+    }
+
+    if (!['A', 'B', 'C', 'D'].includes(correct_opt)) {
+        req.flash('error', 'Musisz wskazać jedną poprawną odpowiedź (A–D).');
+        return res.redirect('/admin/millionaire/questions/new');
+    }
 
     const active = is_active === 'on' ? 1 : 0;
 
@@ -471,6 +504,17 @@ router.post('/millionaire/questions/:id/edit', requireAdmin, async (req, res) =>
         hide_a, hide_b, hide_c, hide_d,
         perc_a, perc_b, perc_c, perc_d
     } = req.body;
+
+    // Walidacja: 4 odpowiedzi + jedna poprawna
+    if (!question_text || !opt_a || !opt_b || !opt_c || !opt_d) {
+        req.flash('error', 'Pytanie musi zawierać komplet 4 odpowiedzi.');
+        return res.redirect(`/admin/millionaire/questions/${id}/edit`);
+    }
+
+    if (!['A', 'B', 'C', 'D'].includes(correct_opt)) {
+        req.flash('error', 'Musisz wskazać jedną poprawną odpowiedź (A–D).');
+        return res.redirect(`/admin/millionaire/questions/${id}/edit`);
+    }
 
     const active = is_active === 'on' ? 1 : 0;
 
