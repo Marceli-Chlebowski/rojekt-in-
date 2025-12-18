@@ -1,8 +1,22 @@
 <div class="admin-page">
-    <div class="admin-header">
+    <div class="admin-card admin-card--wide">
+        <div class="admin-page-header">
+            <div>
+                <div class="admin-breadcrumb">
+                    <a href="/admin">Dashboard</a> / Reguły podatkowe
+                </div>
         <h1>Reguły podatkowe</h1>
-        <a class="btn" href="/admin/tax-rules/new">➕ Dodaj kraj</a>
-    </div>
+                <p class="admin-subtitle">
+                    Twórz i edytuj Reguły podatkowe, które będą wykorzystywane w aplikacji.
+                </p>
+            </div>
+                <div>
+                    <a href="/admin/tax-rules/new"
+                       class="admin-btn admin-btn-primary">
+                        + Dodaj kraj
+                    </a>
+                </div>
+        </div>
 
     <div class="admin-table-wrapper">
         <table class="admin-table">
@@ -31,16 +45,19 @@
                     <td><%= r.long_term_rate ?? '-' %></td>
                     <td><%= r.long_term_days ?? '-' %></td>
                     <td style="white-space:nowrap;">
-                        <a class="btn btn-outline" href="/admin/tax-rules/<%= r.id %>/edit">✏️ Edytuj</a>
+                        <a class="admin-btn-small" href="/admin/tax-rules/<%= r.id %>/edit">Edytuj</a>
 
                         <form method="post" action="/admin/tax-rules/<%= r.id %>/delete" style="display:inline;"
                               onsubmit="return confirm('Na pewno usunąć regułę dla: <%= r.country_name %>?');">
-                            <button class="btn btn-danger" type="submit">🗑 Usuń</button>
-                        </form>
+                            <button type="submit"
+                                    class="admin-btn-small admin-btn-small--danger">
+                                Usuń
+                            </button>                        </form>
                     </td>
                 </tr>
             <% }) %>
             </tbody>
         </table>
+    </div>
     </div>
 </div>

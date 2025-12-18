@@ -10,7 +10,7 @@
     flex-direction: column;
     align-items: center;
     background: var(--bg);
-    color: inherit; /* <<< NIE NADPISUJEMY NA BIAŁY, bierzemy z body (#111827) */
+    color: #111827;
 }
 
 /* Karty */
@@ -40,7 +40,7 @@
 .admin-subtitle {
     margin: 0 0 18px;
     font-size: 15px;
-    color: var(--muted);
+    color: #111827;
 }
 
 /* -------------------------------
@@ -54,8 +54,7 @@
 .admin-form-label {
     display: block;
     margin-bottom: 6px;
-    color: var(--muted);
-    font-size: 14px;
+    color: #111827;    font-size: 14px;
 }
 
 /* Inputy i textarea – LIGHT MODE */
@@ -64,7 +63,7 @@
 .admin-select {
     width: 100%;
     background: #ffffff;
-    color: #111827;
+    color: #1f2937; /* ciemniejszy szary, lepiej kontrastuje na białym tle */
     border: 1px solid var(--border);
     border-radius: 10px;
     padding: 8px 10px;          /* mniej paddingu = więcej miejsca w środku */
@@ -83,22 +82,6 @@
     height: 42px;
 }
 
-
-/* Inputy i textarea – DARK MODE */
-@media (prefers-color-scheme: dark) {
-    .admin-input,
-    .admin-textarea,
-    .admin-select {
-        background: #020617;       /* ciemny szary/czarny */
-        color: #e5e7eb;            /* jasny tekst */
-        border-color: #1f2937;
-    }
-
-    .admin-card {
-        background: #111827;
-        color: #e5e7eb;
-    }
-}
 
 /* Focus */
 .admin-input:focus,
@@ -161,7 +144,7 @@
 
 .admin-breadcrumb {
     font-size: 14px;
-    color: var(--muted);
+    color: #111827;
     margin-bottom: 12px;
 }
 .admin-breadcrumb a {
@@ -193,7 +176,7 @@
     font-size: 13px;
     text-transform: uppercase;
     letter-spacing: 0.03em;
-    color: #6b7280;                 /* szary nagłówków */
+    color: #111827;
     border-bottom: 1px solid var(--border);
 }
 
@@ -203,13 +186,6 @@
     color: #111827;                 /* <<< ciemny tekst komórek */
 }
 
-@media (prefers-color-scheme: dark) {
-    .admin-table th,
-    .admin-table td {
-        color: #e5e7eb;
-        border-color: #1f2937;
-    }
-}
 
 .admin-table tr:hover td {
     background: rgba(109,40,217,.05);
@@ -329,3 +305,4 @@
     position: relative;
     top: -1px;      /* PODNOSI LEKKO STRZAŁKĘ */
 }
+

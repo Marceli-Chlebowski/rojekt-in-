@@ -12,18 +12,22 @@
 
 <main>
     <form action="/quiz/<%= quiz.id %>/submit" method="POST" class="quiz-form">
-        <% questions.forEach((q, idx) => { %>
-            <div class="question">
-                <p><strong><%= idx + 1 %>. <%= q.question_text %></strong></p>
-                <% q.options.forEach(opt => { %>
-                    <label>
-                        <input type="radio" name="q_<%= q.id %>" value="<%= opt.key %>">
-                        <%= opt.key %>. <%= opt.text %>
-                    </label><br>
-                <% }) %>
-            </div>
-        <% }) %>
-        <button type="submit" class="submit-btn">Sprawdź odpowiedzi</button>
+        <div class="millionaire-wrapper">
+            <% questions.forEach((q, idx) => { %>
+                <div class="millionaire-card">
+                    <div class="millionaire-options">
+                        <p><strong class="millionaire-question-text"><%= idx + 1 %>. <%= q.question_text %></strong></p>
+                        <% q.options.forEach(opt => { %>
+                            <button type="submit" name="q_<%= q.id %>" value="<%= opt.key %>" class="millionaire-answer">
+                                <span class="millionaire-answer-label"><%= opt.key %>.</span>
+                                <span class="millionaire-answer-text"><%= opt.text %></span>
+                            </button>
+                        <% }) %>
+                    </div>
+                </div>
+            <% }) %>
+        </div>
+        <button type="submit" class="game-answer">Sprawdź odpowiedzi</button>
     </form>
 </main>
 
