@@ -34,7 +34,16 @@ router.post('/register', async (req, res) => {
 
         // auto-logowanie po rejestracji
         req.session.user = { id: result.insertId, username };
-        req.session.loggedInAt = new Date().toISOString(); // << zapisz czas logowania
+        req.session.isAdmin = false; // nowy user jest zwykłym userem
+        req.session.loggedInAt = new Date().toISOString();
+
+        // ✅ POWIĄZANIE usera z sesją w tabeli user_sessions
+        await pool.query(
+            `INSERT INTO user_sessions (user_id, session_id)
+       VALUES (?, ?)
+       ON DUPLICATE KEY UPDATE user_id = VALUES(user_id)`,
+            [result.insertId, req.sessionID]
+        );
 
         console.log('[AUTH] Zarejestrowano user_id=', result.insertId);
         res.redirect('/');
@@ -66,8 +75,16 @@ router.post('/login', async (req, res) => {
         }
 
         req.session.user = { id: user.id, username: user.username };
-        req.session.isAdmin = (user.role === 'admin'); // ✅ dopiero po pobraniu usera
+        req.session.isAdmin = (user.role === 'admin');
         req.session.loggedInAt = new Date().toISOString();
+
+        // ✅ POWIĄZANIE usera z sesją w tabeli user_sessions
+        await pool.query(
+            `INSERT INTO user_sessions (user_id, session_id)
+       VALUES (?, ?)
+       ON DUPLICATE KEY UPDATE user_id = VALUES(user_id)`,
+            [user.id, req.sessionID]
+        );
 
         console.log('[AUTH] Zalogowano user_id=', user.id, 'isAdmin=', req.session.isAdmin);
         res.redirect('/');
@@ -77,13 +94,22 @@ router.post('/login', async (req, res) => {
     }
 });
 
+router.post('/logout', async (req, res) => {
+    try {
+        const sid = req.sessionID; // zapisz zanim zniszczysz sesję
 
-router.post('/logout', (req, res) => {
-    req.session.destroy((err) => {
-        if (err) console.error('[AUTH][LOGOUT] Błąd destroy sesji:', err?.message || err);
-        res.redirect('/');
-    });
+        // ✅ usuń powiązanie sesji z użytkownikiem
+        await pool.query('DELETE FROM user_sessions WHERE session_id = ?', [sid]);
+
+        req.session.destroy((err) => {
+            if (err) console.error('[AUTH][LOGOUT] Błąd destroy sesji:', err?.message || err);
+            res.redirect('/');
+        });
+    } catch (e) {
+        console.error('[AUTH][LOGOUT] Błąd:', e.code || e.message || e);
+        // nawet jak coś pójdzie nie tak, spróbuj zniszczyć sesję
+        req.session.destroy(() => res.redirect('/'));
+    }
 });
-
 
 module.exports = router;
