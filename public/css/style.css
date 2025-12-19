@@ -69,10 +69,25 @@ nav.appbar {
 
 /* ---------- FORMULARZE (login/register wyszukiwarka) ---------- */
 form { display: grid; gap: 12px; }
-.input, input[type="text"], input[type="email"], input[type="password"], input[type="date"], .select, select {
-    width: 100%; background: var(--surface); border: 1px solid var(--border); border-radius: 10px;
-    padding: 10px 12px; outline: none; color: inherit;
+
+/* Ujednolicone pola formularzy (także number – np. kalkulator podatkowy) */
+.input,
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="date"],
+input[type="number"],
+.select,
+select {
+    width: 100%;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 10px 12px;
+    outline: none;
+    color: inherit;
 }
+
 input:focus, select:focus { border-color: var(--brand); box-shadow: 0 0 0 4px rgba(109,40,217,.12); }
 .form-card {
     max-width: 520px; margin: 24px auto; background: var(--surface); border: 1px solid var(--border);
@@ -224,6 +239,7 @@ input:focus, select:focus { border-color: var(--brand); box-shadow: 0 0 0 4px rg
     background: var(--brand-600);
     color: #fff !important;         /* nadal biały tekst po najechaniu */
 }
+/* Grid layout for listing quizzes on the quizzes page */
 .quizzes-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
@@ -231,6 +247,7 @@ input:focus, select:focus { border-color: var(--brand); box-shadow: 0 0 0 4px rg
     margin-top: 20px;
 }
 
+/* Individual quiz card styling used in the quizzes listing */
 .quiz-card {
     display: block;
     background: var(--surface);
@@ -258,6 +275,16 @@ input:focus, select:focus { border-color: var(--brand); box-shadow: 0 0 0 4px rg
     line-height: 1.5;
     color: var(--muted);
 }
+
+/* Quiz (formularz z listą pytań) – odstępy między blokami pytań */
+.quiz-form .millionaire-wrapper {
+    display: grid;
+    gap: 14px;
+}
+.quiz-form .game-answer {
+    margin-top: 14px;
+}
+
 
 /* Mobile */
 @media (max-width: 720px) {
@@ -342,6 +369,7 @@ footer {
 }
 
 /* ----------- Leaderboard styles ----------- */
+/* Grid layout for leaderboard pages */
 .leaderboard-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
@@ -349,6 +377,7 @@ footer {
     margin-top: 30px;
 }
 
+/* Card styling for leaderboard entries */
 .leaderboard-card {
     margin-top: 10px;
     background: var(--surface);
@@ -376,6 +405,7 @@ footer {
     color: var(--muted);
 }
 
+/* Styling for the active menu link */
 .menu a.active {
     color: var(--brand-700);
     font-weight: 700;
@@ -385,6 +415,7 @@ footer {
    Milionaire – UI
 ======================= */
 
+/* Wrapper for the Millionaire game UI */
 .millionaire-wrapper {
     max-width: 1100px;
     margin: 24px auto 48px;
@@ -603,6 +634,7 @@ footer {
     }
 }
 
+/* Hero image styling for article pages */
 .article-hero {
     width: 100%;
     max-height: 360px;
@@ -613,6 +645,7 @@ footer {
     background: #0f172a;
 }
 
+/* Container styling for article thumbnails */
 .article-card-thumb {
     margin-bottom: 12px;
     border-radius: 12px;
@@ -620,10 +653,52 @@ footer {
     background: radial-gradient(circle at 0 0, #4c1d95, #020617);
 }
 
+/* Styling for images inside article thumbnails */
 .article-card-thumb img {
     width: 100%;
     height: 140px;
     display: block;
     object-fit: cover;
 }
+
+.form-actions--center { justify-content: center; }
+
+/* Zielony przycisk (np. Kalkulator podatkowy) */
+.btn-success { background: var(--ok); box-shadow: 0 6px 14px rgba(22,163,74,.25); }
+.btn-success:hover { background: #15803d; }
+
+/* Linki udające przyciski nie powinny się podkreślać */
+a.btn, a.btn:hover, a.btn:focus { text-decoration: none; }
+
+/* Ujednolicenie rozmiaru przycisków (button i link) */
+.btn,
+a.btn,
+button.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+    height: 40px;          /* gwarantuje identyczną wysokość */
+    padding: 0 14px;       /* zamiast różnych paddingów */
+    text-decoration: none; /* na wszelki wypadek */
+}
+
+/* Mniejszy wariant przycisku */
+.btn-sm {
+    height: 34px;
+    padding: 0 12px;
+    font-size: 0.92rem;
+}
+
+/* Focus dla zielonego przycisku – bez fioletowej obwódki */
+.btn-success:focus,
+.btn-success:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(22,163,74,.25);
+}
+
+
+
+
+
 

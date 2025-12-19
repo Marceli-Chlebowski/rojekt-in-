@@ -3,6 +3,7 @@
 =============================================== */
 
 /* Strona admina */
+/* Main container for the admin panel page */
 .admin-page {
     min-height: calc(100vh - 80px);
     padding: 32px 16px 48px;
@@ -14,6 +15,7 @@
 }
 
 /* Karty */
+/* Admin card container used for sections and forms */
 .admin-card {
     width: 100%;
     max-width: 900px;
@@ -25,11 +27,13 @@
     color: #111827; /* <<< ciemny tekst wewnątrz karty */
 }
 
+/* Wider version of the admin card */
 .admin-card--wide {
     max-width: 1100px;
 }
 
 /* Nagłówki */
+/* Title styling within admin cards */
 .admin-title {
     font-size: 26px;
     margin: 0 0 6px;
@@ -37,6 +41,7 @@
     color: var(--brand-700);
 }
 
+/* Subtitle styling within admin cards */
 .admin-subtitle {
     margin: 0 0 18px;
     font-size: 15px;
@@ -47,10 +52,12 @@
    FORMULARZE
 ------------------------------- */
 
+/* Spacing wrapper for each form field group */
 .admin-form-group {
     margin-bottom: 18px;
 }
 
+/* Label styling for form fields */
 .admin-form-label {
     display: block;
     margin-bottom: 6px;
@@ -58,6 +65,7 @@
 }
 
 /* Inputy i textarea – LIGHT MODE */
+/* Base styles for text inputs, textareas and select elements */
 .admin-input,
 .admin-textarea,
 .admin-select {
@@ -72,18 +80,21 @@
     outline: none;
 }
 
+/* Textarea-specific sizing and behaviour */
 .admin-textarea {
     min-height: 120px;
     resize: vertical;
 }
 
 /* liczby (np. % dla A/B/C/D) – spójna wysokość */
+/* Specific height for numeric input fields */
 .admin-input[type="number"] {
     height: 42px;
 }
 
 
 /* Focus */
+/* Focus state styling for form fields */
 .admin-input:focus,
 .admin-textarea:focus,
 .admin-select:focus {
@@ -95,6 +106,7 @@
    PRZYCISKI
 ------------------------------- */
 
+/* Base button styling used in the admin interface */
 .admin-btn {
     appearance: none;
     border-radius: 12px;
@@ -106,6 +118,7 @@
 }
 
 /* Zielony – akcje pozytywne */
+/* Primary action button (green) */
 .admin-btn-primary {
     background: var(--ok);
     border-color: var(--ok);
@@ -117,6 +130,7 @@
 }
 
 /* Fioletowy – akcje neutralne */
+/* Secondary action button (purple) */
 .admin-btn-secondary {
     background: transparent;
     border: 1px solid var(--brand-700);
@@ -127,6 +141,7 @@
 }
 
 /* Czerwony – usuwanie, wylogowanie */
+/* Danger action buttons (red) */
 .admin-btn-danger,
 .admin-btn-small--danger {
     background: transparent;
@@ -142,6 +157,7 @@
    BREADCRUMB
 ------------------------------- */
 
+/* Breadcrumb navigation styling */
 .admin-breadcrumb {
     font-size: 14px;
     color: #111827;
@@ -158,12 +174,14 @@
    TABELKI / LISTY
 ------------------------------- */
 
+/* Wrapper providing horizontal scrolling for tables */
 .admin-table-wrapper {
     width: 100%;
     overflow-x: auto;
     margin-top: 20px;
 }
 
+/* Styling for tables in the admin interface */
 .admin-table {
     width: 100%;
     border-collapse: collapse;
@@ -192,11 +210,13 @@
 }
 
 /* Akcje w wierszach */
+/* Container for action buttons within table rows */
 .admin-table-actions {
     display: flex;
     gap: 8px;
 }
 
+/* Small button styling for inline actions */
 .admin-btn-small {
     padding: 6px 12px;
     border-radius: 8px;
@@ -210,6 +230,7 @@
 }
 
 /* Badge (np. poprawna odpowiedź) */
+/* Badge styling for status labels */
 .admin-badge {
     display: inline-block;
     padding: 2px 10px;
@@ -224,6 +245,7 @@
    HEADER SEKCJI
 ------------------------------- */
 
+/* Header section layout used at the top of admin pages */
 .admin-page-header {
     display: flex;
     justify-content: space-between;
@@ -236,6 +258,7 @@
    LOGIN BOX
 ------------------------------- */
 
+/* Wrapper for the admin login page */
 .admin-auth-wrapper {
     max-width: 420px;
     margin: 60px auto;
@@ -243,6 +266,7 @@
 
 /* ===== Admin – Milionerzy: układ formularzy ===== */
 
+/* Override of global .form-row for admin forms */
 .admin-card .form-row {
     /* nadpisujemy globalne .form-row, żeby nic się nie nakładało */
     display: grid;
@@ -252,11 +276,13 @@
 }
 
 /* trochę więcej oddechu między label a polem */
+/* Adjusted spacing for labels inside admin cards */
 .admin-card .admin-form-label {
     margin-bottom: 4px;
 }
 
 /* grupy checkboxów 50/50 */
+/* Group container for 50/50 lifeline checkboxes */
 .admin-fifty-group {
     margin-top: 10px;
     display: flex;
@@ -264,6 +290,7 @@
     gap: 8px 16px;
 }
 
+/* Styling for labels inside the 50/50 lifeline group */
 .admin-fifty-group label {
     display: flex;
     align-items: center;
@@ -272,6 +299,7 @@
 }
 
 /* wizualne wyłączenie opcji 50/50 dla poprawnej odpowiedzi */
+/* Disabled appearance for 50/50 lifeline options */
 .admin-fifty-disabled {
     opacity: 0.6;
     cursor: not-allowed;
@@ -280,6 +308,7 @@
     cursor: not-allowed;
 }
 
+/* Styling for the back navigation link */
 .back-link {
     display: inline-flex;
     align-items: center;
@@ -295,14 +324,23 @@
     transition: background .15s ease, transform .05s ease;
 }
 
+/* Hover effect for the back navigation link */
 .back-link:hover {
     background: rgba(109,40,217,.06);
     text-decoration: none;
     transform: translateY(-1px);
 }
 
+/* Slight positional adjustment for arrow icon inside the back link */
 .back-link .arrow {
     position: relative;
     top: -1px;      /* PODNOSI LEKKO STRZAŁKĘ */
 }
 
+/* wąskie pola (np. kod kraju) */
+.admin-input--xs { max-width: 140px; }
+
+/* węższa karta dla krótkich formularzy (np. podatki) */
+.admin-card--narrow {
+    max-width: 720px;
+}
