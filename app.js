@@ -6,7 +6,7 @@ const expressLayouts = require('express-ejs-layouts');
 const flash = require('connect-flash');
 const sessionMiddleware = require('./config/session');
 
-// ⬇️ NOWY IMPORT – router panelu admina
+// ⬇NOWY IMPORT – router panelu admina
 const adminRouter = require('./routes/admin');
 
 const app = express();

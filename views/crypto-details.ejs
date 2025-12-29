@@ -50,7 +50,6 @@
 </main>
 
 <script>
-    // 1) Dynamicznie ładujemy Chart.js
     (function loadChartAndRender() {
         const s = document.createElement('script');
         s.src = "https://cdn.jsdelivr.net/npm/chart.js";
@@ -61,19 +60,15 @@
 
     async function renderChart() {
         try {
-            // 2) Pobieramy dane wykresu (AJAX do Twojego endpointu)
             const res = await fetch(`/api/coin/<%= coin.id %>/market_chart?days=<%= chartDays %>`);
-            const { prices } = await res.json(); // [['ts','price'], ...] z CoinGecko
+            const { prices } = await res.json();
 
-            // 3) Budujemy etykiety (kategorie) i serię
             const labels = prices.map(p => {
                 const d = new Date(p[0]);
-                // Krótki format: D.M
                 return d.toLocaleDateString('pl-PL', { day: '2-digit', month: '2-digit' });
             });
             const series = prices.map(p => p[1]);
 
-            // 4) Rysujemy wykres na osi kategorii (bez adaptera czasu)
             const ctx = document.getElementById('priceChart').getContext('2d');
             new Chart(ctx, {
                 type: 'line',

@@ -7,7 +7,7 @@ const pool = require('./config/db');
 
 const PORT = process.env.PORT || 3000;
 
-// --- Helpers do pobierania z CoinGecko ---
+// Pobieranie CoinGecko ---
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 
 const fetchWithRetry = async (url, opts = {}, maxRetries = 4, initialDelay = 2000) => {
@@ -30,7 +30,7 @@ const fetchWithRetry = async (url, opts = {}, maxRetries = 4, initialDelay = 200
     throw lastErr;
 };
 
-// --- Aktualizacja kryptowalut w bazie co 2 minuty ---
+// Aktualizacja kryptowalut w bazie co 2 minuty ---
 const updateCryptosInDB = async () => {
     try {
         const url = 'https://api.coingecko.com/api/v3/coins/markets';
@@ -43,7 +43,6 @@ const updateCryptosInDB = async () => {
 
         const cryptos = res.data;
 
-        // Insert or update each crypto in DB
         const queries = cryptos.map(c => {
             return pool.query(
                 `INSERT INTO cryptocurrencies (id, symbol, name, image, current_price, market_cap, market_cap_rank, total_volume, price_change_percentage_24h)
@@ -78,7 +77,6 @@ const updateCryptosInDB = async () => {
     }
 };
 
-// Initial update and set interval
 updateCryptosInDB();
 setInterval(updateCryptosInDB, 2 * 60 * 1000);
 

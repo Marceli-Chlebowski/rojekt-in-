@@ -18,7 +18,14 @@
         <div class="form-row">
             <div>
                 <label>Data urodzenia</label>
-                <input class="input" type="date" name="birth_date" value="<%= userRow.birth_date %>" required>
+                <input
+                        class="input"
+                        type="date"
+                        name="birth_date"
+                        value="<%= userRow.birth_date %>"
+                        max="<%= today %>"
+                        required
+                >
             </div>
             <div>
                 <label>Login</label>

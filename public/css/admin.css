@@ -1,9 +1,10 @@
 /* ============================================
-   ADMIN PANEL – spójny z user CSS (fiolet/szary/czarny/biały)
+   PANEL ADMINA – spójny z CSS użytkownika
+   (fiolet / szary / czarny / biały)
 =============================================== */
 
-/* Strona admina */
-/* Main container for the admin panel page */
+/* Strona panelu admina */
+/* Główny kontener strony panelu administracyjnego */
 .admin-page {
     min-height: calc(100vh - 80px);
     padding: 32px 16px 48px;
@@ -15,7 +16,7 @@
 }
 
 /* Karty */
-/* Admin card container used for sections and forms */
+/* Kontener karty admina używany dla sekcji i formularzy */
 .admin-card {
     width: 100%;
     max-width: 900px;
@@ -24,16 +25,16 @@
     border-radius: 16px;
     padding: 28px;
     box-shadow: var(--shadow);
-    color: #111827; /* <<< ciemny tekst wewnątrz karty */
+    color: #111827; /* ciemny tekst wewnątrz karty */
 }
 
-/* Wider version of the admin card */
+/* Szeroka wersja karty admina */
 .admin-card--wide {
     max-width: 1100px;
 }
 
 /* Nagłówki */
-/* Title styling within admin cards */
+/* Styl tytułu w kartach panelu admina */
 .admin-title {
     font-size: 26px;
     margin: 0 0 6px;
@@ -41,7 +42,7 @@
     color: var(--brand-700);
 }
 
-/* Subtitle styling within admin cards */
+/* Styl podtytułu w kartach panelu admina */
 .admin-subtitle {
     margin: 0 0 18px;
     font-size: 15px;
@@ -52,61 +53,61 @@
    FORMULARZE
 ------------------------------- */
 
-/* Spacing wrapper for each form field group */
+/* Odstępy dla grup pól formularza */
 .admin-form-group {
     margin-bottom: 18px;
 }
 
-/* Label styling for form fields */
+/* Styl etykiet pól formularza */
 .admin-form-label {
     display: block;
     margin-bottom: 6px;
-    color: #111827;    font-size: 14px;
+    color: #111827;
+    font-size: 14px;
 }
 
-/* Inputy i textarea – LIGHT MODE */
-/* Base styles for text inputs, textareas and select elements */
+/* Inputy i textarea – TRYB JASNY */
+/* Podstawowy styl inputów tekstowych, textarea i selectów */
 .admin-input,
 .admin-textarea,
 .admin-select {
     width: 100%;
     background: #ffffff;
-    color: #1f2937; /* ciemniejszy szary, lepiej kontrastuje na białym tle */
+    color: #1f2937; /* ciemniejszy szary – lepszy kontrast */
     border: 1px solid var(--border);
     border-radius: 10px;
-    padding: 8px 10px;          /* mniej paddingu = więcej miejsca w środku */
+    padding: 8px 10px;          /* mniejszy padding = więcej miejsca */
     font-size: 15px;
     line-height: 1.3;           /* lepsze wyrównanie tekstu */
     outline: none;
 }
 
-/* Textarea-specific sizing and behaviour */
+/* Specyficzne ustawienia dla textarea */
 .admin-textarea {
     min-height: 120px;
     resize: vertical;
 }
 
-/* liczby (np. % dla A/B/C/D) – spójna wysokość */
-/* Specific height for numeric input fields */
+/* Pola liczbowe (np. % dla A/B/C/D) – spójna wysokość */
+/* Stała wysokość inputów typu number */
 .admin-input[type="number"] {
     height: 42px;
 }
 
-
-/* Focus */
-/* Focus state styling for form fields */
+/* Fokus */
+/* Styl aktywnego pola formularza */
 .admin-input:focus,
 .admin-textarea:focus,
 .admin-select:focus {
-    border-color: var(--brand);                          /* fiolet */
-    box-shadow: 0 0 0 4px rgba(109, 40, 217, 0.12);       /* poświata */
+    border-color: var(--brand);                    /* fiolet */
+    box-shadow: 0 0 0 4px rgba(109, 40, 217, 0.12); /* poświata */
 }
 
 /* -------------------------------
    PRZYCISKI
 ------------------------------- */
 
-/* Base button styling used in the admin interface */
+/* Bazowy styl przycisków w panelu admina */
 .admin-btn {
     appearance: none;
     border-radius: 12px;
@@ -118,7 +119,7 @@
 }
 
 /* Zielony – akcje pozytywne */
-/* Primary action button (green) */
+/* Główny przycisk akcji */
 .admin-btn-primary {
     background: var(--ok);
     border-color: var(--ok);
@@ -130,7 +131,7 @@
 }
 
 /* Fioletowy – akcje neutralne */
-/* Secondary action button (purple) */
+/* Drugorzędny przycisk akcji */
 .admin-btn-secondary {
     background: transparent;
     border: 1px solid var(--brand-700);
@@ -141,7 +142,7 @@
 }
 
 /* Czerwony – usuwanie, wylogowanie */
-/* Danger action buttons (red) */
+/* Przyciski akcji niebezpiecznych */
 .admin-btn-danger,
 .admin-btn-small--danger {
     background: transparent;
@@ -157,7 +158,7 @@
    BREADCRUMB
 ------------------------------- */
 
-/* Breadcrumb navigation styling */
+/* Styl nawigacji okruszkowej (breadcrumb) */
 .admin-breadcrumb {
     font-size: 14px;
     color: #111827;
@@ -174,14 +175,14 @@
    TABELKI / LISTY
 ------------------------------- */
 
-/* Wrapper providing horizontal scrolling for tables */
+/* Kontener umożliwiający przewijanie tabeli w poziomie */
 .admin-table-wrapper {
     width: 100%;
     overflow-x: auto;
     margin-top: 20px;
 }
 
-/* Styling for tables in the admin interface */
+/* Styl tabel w panelu admina */
 .admin-table {
     width: 100%;
     border-collapse: collapse;
@@ -201,22 +202,21 @@
 .admin-table td {
     padding: 12px 10px;
     border-bottom: 1px solid var(--border);
-    color: #111827;                 /* <<< ciemny tekst komórek */
+    color: #111827; /* ciemny tekst komórek */
 }
-
 
 .admin-table tr:hover td {
     background: rgba(109,40,217,.05);
 }
 
 /* Akcje w wierszach */
-/* Container for action buttons within table rows */
+/* Kontener przycisków akcji w tabeli */
 .admin-table-actions {
     display: flex;
     gap: 8px;
 }
 
-/* Small button styling for inline actions */
+/* Małe przyciski akcji w tabelach */
 .admin-btn-small {
     padding: 6px 12px;
     border-radius: 8px;
@@ -230,7 +230,7 @@
 }
 
 /* Badge (np. poprawna odpowiedź) */
-/* Badge styling for status labels */
+/* Etykieta statusu */
 .admin-badge {
     display: inline-block;
     padding: 2px 10px;
@@ -242,10 +242,10 @@
 }
 
 /* -------------------------------
-   HEADER SEKCJI
+   NAGŁÓWEK SEKCJI
 ------------------------------- */
 
-/* Header section layout used at the top of admin pages */
+/* Układ nagłówka strony panelu admina */
 .admin-page-header {
     display: flex;
     justify-content: space-between;
@@ -255,10 +255,10 @@
 }
 
 /* -------------------------------
-   LOGIN BOX
+   LOGOWANIE
 ------------------------------- */
 
-/* Wrapper for the admin login page */
+/* Kontener strony logowania administratora */
 .admin-auth-wrapper {
     max-width: 420px;
     margin: 60px auto;
@@ -266,23 +266,22 @@
 
 /* ===== Admin – Milionerzy: układ formularzy ===== */
 
-/* Override of global .form-row for admin forms */
+/* Nadpisanie globalnego .form-row dla formularzy admina */
 .admin-card .form-row {
-    /* nadpisujemy globalne .form-row, żeby nic się nie nakładało */
+    /* nadpisujemy globalne .form-row, aby uniknąć nakładania */
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
     gap: 12px 16px;
     align-items: flex-start;
 }
 
-/* trochę więcej oddechu między label a polem */
-/* Adjusted spacing for labels inside admin cards */
+/* Większy odstęp między etykietą a polem */
 .admin-card .admin-form-label {
     margin-bottom: 4px;
 }
 
-/* grupy checkboxów 50/50 */
-/* Group container for 50/50 lifeline checkboxes */
+/* Grupy checkboxów 50/50 */
+/* Kontener grupy checkboxów koła ratunkowego 50/50 */
 .admin-fifty-group {
     margin-top: 10px;
     display: flex;
@@ -290,7 +289,7 @@
     gap: 8px 16px;
 }
 
-/* Styling for labels inside the 50/50 lifeline group */
+/* Styl etykiet w grupie 50/50 */
 .admin-fifty-group label {
     display: flex;
     align-items: center;
@@ -298,8 +297,8 @@
     font-size: 14px;
 }
 
-/* wizualne wyłączenie opcji 50/50 dla poprawnej odpowiedzi */
-/* Disabled appearance for 50/50 lifeline options */
+/* Wizualne wyłączenie opcji 50/50 */
+/* Styl dla nieaktywnych opcji 50/50 */
 .admin-fifty-disabled {
     opacity: 0.6;
     cursor: not-allowed;
@@ -308,7 +307,8 @@
     cursor: not-allowed;
 }
 
-/* Styling for the back navigation link */
+/* Link powrotu */
+/* Styl linku nawigacji wstecz */
 .back-link {
     display: inline-flex;
     align-items: center;
@@ -324,23 +324,25 @@
     transition: background .15s ease, transform .05s ease;
 }
 
-/* Hover effect for the back navigation link */
+/* Efekt hover dla linku powrotu */
 .back-link:hover {
     background: rgba(109,40,217,.06);
     text-decoration: none;
     transform: translateY(-1px);
 }
 
-/* Slight positional adjustment for arrow icon inside the back link */
+/* Delikatne przesunięcie ikonki strzałki */
 .back-link .arrow {
     position: relative;
-    top: -1px;      /* PODNOSI LEKKO STRZAŁKĘ */
+    top: -1px;
 }
 
-/* wąskie pola (np. kod kraju) */
-.admin-input--xs { max-width: 140px; }
+/* Wąskie pola (np. kod kraju) */
+.admin-input--xs {
+    max-width: 140px;
+}
 
-/* węższa karta dla krótkich formularzy (np. podatki) */
+/* Węższa karta dla krótkich formularzy (np. podatki) */
 .admin-card--narrow {
     max-width: 720px;
 }

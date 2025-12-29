@@ -16,7 +16,6 @@
         </p>
 
         <form method="post" action="<%= action %>">
-            <!-- Treść pytania -->
             <div class="admin-form-group">
                 <label class="admin-form-label">
                     Treść pytania:
@@ -28,8 +27,6 @@
                         required
                 ><%= question ? question.question_text : '' %></textarea>
             </div>
-
-            <!-- Odpowiedzi A / B -->
             <div class="admin-form-group">
                 <div class="form-row">
                     <div>
@@ -80,8 +77,6 @@
                     </div>
                 </div>
             </div>
-
-            <!-- Poziom trudności + poprawna -->
             <div class="admin-form-group">
                 <div class="form-row">
                     <div>

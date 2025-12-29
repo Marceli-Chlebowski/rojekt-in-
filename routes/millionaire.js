@@ -2,13 +2,13 @@ const express = require('express');
 const router = express.Router();
 const pool = require('../config/db');
 
-// middleware – tylko zalogowany (TAK SAMO jak w kalkulatorze)
+// Middleware: dostęp tylko dla zalogowanych (tak samo jak w kalkulatorze)
 function requireLogin(req, res, next) {
     if (!req.session.user) {
         req.flash('error', 'Musisz być zalogowany');
         return res.redirect('/login');
     }
-    next();
+    return next();
 }
 
 // Drabina nagród (10 poziomów)
@@ -25,14 +25,19 @@ const PRIZE_LADDER = [
     1000000
 ];
 
-// Ekran startowy – TYLKO ZALOGOWANI (blokuje wejście z paska)
+/* =========================================================
+   START / INICJACJA GRY
+========================================================= */
+
+// Ekran startowy (tylko zalogowani)
 router.get('/', requireLogin, (req, res) => {
-    res.render('millionaire/index');
+    return res.render('millionaire/index');
 });
 
-// START gry – losujemy 10 różnych pytań z puli (TYLKO ZALOGOWANI)
+// Start gry: losujemy 10 różnych aktywnych pytań (tylko zalogowani)
 router.get('/start', requireLogin, async (req, res) => {
     try {
+        // Sprawdzenie, czy mamy minimalną liczbę aktywnych pytań
         const [[{ count: activeCount }]] = await pool.query(
             'SELECT COUNT(*) AS count FROM millionaire_questions WHERE is_active = 1'
         );
@@ -44,6 +49,7 @@ router.get('/start', requireLogin, async (req, res) => {
             });
         }
 
+        // Losujemy 10 pytań na sesję gry
         const [questions] = await pool.query(
             `SELECT *
              FROM millionaire_questions
@@ -52,6 +58,7 @@ router.get('/start', requireLogin, async (req, res) => {
                  LIMIT 10`
         );
 
+        // Stan gry trzymamy w sesji
         req.session.millionaireGame = {
             currentIndex: 0,
             questions,
@@ -64,14 +71,18 @@ router.get('/start', requireLogin, async (req, res) => {
             hiddenOptionsByQuestion: {}
         };
 
-        res.redirect('/millionaire/question');
+        return res.redirect('/millionaire/question');
     } catch (err) {
         console.error(err);
-        res.status(500).send('Błąd serwera przy starcie gry');
+        return res.status(500).send('Błąd serwera przy starcie gry');
     }
 });
 
-// helper: pobierz podpowiedzi do pytania
+/* =========================================================
+   POMOCNICZE: PODPOWIEDZI
+========================================================= */
+
+// Pobranie podpowiedzi do pytania (50/50 i publiczność)
 async function getHintsForQuestion(questionId) {
     const [rows] = await pool.query(
         'SELECT * FROM millionaire_hints WHERE question_id = ?',
@@ -89,24 +100,35 @@ async function getHintsForQuestion(questionId) {
     return { fifty, audience };
 }
 
-// WYŚWIETLENIE PYTANIA (TYLKO ZALOGOWANI)
+/* =========================================================
+   PYTANIE / ODPOWIEDŹ
+========================================================= */
+
+// Wyświetlenie aktualnego pytania (tylko zalogowani)
 router.get('/question', requireLogin, async (req, res) => {
     const game = req.session.millionaireGame;
     if (!game) return res.redirect('/millionaire');
 
     const { currentIndex, questions, lifelines, hiddenOptionsByQuestion, score } = game;
     const question = questions[currentIndex];
+
+    // Jeśli brak pytania, przechodzimy do podsumowania
     if (!question) return res.redirect('/millionaire/summary');
 
+    // Pobranie podpowiedzi dla aktualnego pytania
     const { fifty, audience } = await getHintsForQuestion(question.id);
 
+    // Aktualnie zdobyta nagroda (na podstawie liczby poprawnych odpowiedzi)
     const currentPrize = score > 0 ? PRIZE_LADDER[score - 1] : 0;
+
+    // Ukryte odpowiedzi dla aktualnego pytania (koło 50/50)
     const hiddenOptions = hiddenOptionsByQuestion[question.id] || [];
 
+    // „Publiczność” pokazujemy tylko na pytaniu, na którym jej użyto
     const audienceVisible =
         lifelines.audienceUsed && lifelines.audienceQuestionId === question.id;
 
-    res.render('millionaire/question', {
+    return res.render('millionaire/question', {
         question,
         index: currentIndex + 1,
         total: questions.length,
@@ -121,7 +143,7 @@ router.get('/question', requireLogin, async (req, res) => {
     });
 });
 
-// OBSŁUGA ODPOWIEDZI (TYLKO ZALOGOWANI)
+// Obsługa odpowiedzi (tylko zalogowani)
 router.post('/answer', requireLogin, (req, res) => {
     const game = req.session.millionaireGame;
     if (!game) return res.redirect('/millionaire');
@@ -133,20 +155,28 @@ router.post('/answer', requireLogin, (req, res) => {
     const isCorrect = chosen === question.correct_opt;
 
     if (isCorrect) {
+        // Wynik = liczba poprawnych odpowiedzi
         game.score = currentIndex + 1;
 
+        // Jeśli to było ostatnie pytanie – koniec gry
         if (currentIndex + 1 >= questions.length) {
             return res.redirect('/millionaire/summary');
         }
 
+        // Przechodzimy do kolejnego pytania
         game.currentIndex += 1;
         return res.redirect('/millionaire/question');
     }
 
+    // Błędna odpowiedź – przechodzimy do podsumowania
     return res.redirect('/millionaire/summary');
 });
 
-// KOŁA RATUNKOWE (TYLKO ZALOGOWANI)
+/* =========================================================
+   KOŁA RATUNKOWE
+========================================================= */
+
+// Użycie koła ratunkowego (tylko zalogowani)
 router.post('/lifeline', requireLogin, async (req, res) => {
     const type = req.body.type; // 'fifty' | 'audience'
     const game = req.session.millionaireGame;
@@ -161,9 +191,11 @@ router.post('/lifeline', requireLogin, async (req, res) => {
     const correct = question.correct_opt;
     const wrongOptions = options.filter(o => o !== correct);
 
+    // 50/50: ukrywamy dwie błędne odpowiedzi (z preferencją ustawień z DB)
     if (type === 'fifty' && !game.lifelines.fiftyUsed) {
         let hidden = [];
 
+        // Jeśli jest wpis w DB, wykorzystujemy go jako podpowiedź
         if (fifty) {
             options.forEach(letter => {
                 if (letter === correct) return;
@@ -172,10 +204,13 @@ router.post('/lifeline', requireLogin, async (req, res) => {
             });
         }
 
+        // Bezpieczeństwo: ukrywamy tylko błędne odpowiedzi
         hidden = hidden.filter(l => wrongOptions.includes(l));
 
+        // Maksymalnie dwie odpowiedzi
         if (hidden.length > 2) hidden = hidden.slice(0, 2);
 
+        // Jeśli DB nie podało dwóch – dobieramy losowo/po kolei z błędnych
         if (hidden.length < 2) {
             for (const w of wrongOptions) {
                 if (!hidden.includes(w)) {
@@ -189,6 +224,7 @@ router.post('/lifeline', requireLogin, async (req, res) => {
         game.lifelines.fiftyUsed = true;
     }
 
+    // Publiczność: oznaczamy, że ma być widoczna na tym pytaniu
     if (type === 'audience' && !game.lifelines.audienceUsed) {
         game.lifelines.audienceUsed = true;
         game.lifelines.audienceQuestionId = question.id;
@@ -197,7 +233,11 @@ router.post('/lifeline', requireLogin, async (req, res) => {
     return res.redirect('/millionaire/question');
 });
 
-// PODSUMOWANIE (TYLKO ZALOGOWANI)
+/* =========================================================
+   PODSUMOWANIE + RANKING
+========================================================= */
+
+// Podsumowanie gry (tylko zalogowani) + zapis wyniku
 router.get('/summary', requireLogin, async (req, res) => {
     const game = req.session.millionaireGame;
     if (!game) return res.redirect('/millionaire');
@@ -206,6 +246,7 @@ router.get('/summary', requireLogin, async (req, res) => {
     const total = questions.length;
     const earnedPrize = score > 0 ? PRIZE_LADDER[score - 1] : 0;
 
+    // Zapis wyniku do bazy (jeśli znamy user_id)
     const user = req.session.user;
     if (user && user.id) {
         try {
@@ -219,12 +260,13 @@ router.get('/summary', requireLogin, async (req, res) => {
         }
     }
 
+    // Czyścimy stan gry z sesji
     req.session.millionaireGame = null;
 
-    res.render('millionaire/summary', { score, total, earnedPrize });
+    return res.render('millionaire/summary', { score, total, earnedPrize });
 });
 
-// RANKING (publiczny)
+// Ranking (publiczny)
 router.get('/leaderboard', async (req, res) => {
     try {
         const [rows] = await pool.query(
@@ -241,10 +283,10 @@ router.get('/leaderboard', async (req, res) => {
                  LIMIT 20`
         );
 
-        res.render('millionaire/leaderboard', { rows });
+        return res.render('millionaire/leaderboard', { rows });
     } catch (err) {
         console.error(err);
-        res.status(500).send('Błąd pobierania rankingu');
+        return res.status(500).send('Błąd pobierania rankingu');
     }
 });
 

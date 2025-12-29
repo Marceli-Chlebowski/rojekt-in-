@@ -35,7 +35,7 @@
         if (!btn) return;
 
         const coinId = btn.getAttribute('data-coin');
-        btn.classList.toggle('active'); // optymistycznie
+        btn.classList.toggle('active');
 
         try {
             const res = await fetch('/favorites/toggle', {
@@ -49,7 +49,7 @@
                 alert(data.error || 'Nie udało się zmienić ulubionych');
                 return;
             }
-            // jeśli odznaczono w ulubionych – usuń kartę z listy
+
             if (!btn.classList.contains('active')) {
                 btn.closest('.crypto-card').remove();
             }

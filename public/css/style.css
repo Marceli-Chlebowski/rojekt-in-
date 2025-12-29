@@ -27,7 +27,6 @@ a:hover { text-decoration: underline; }
     --shadow: 0 8px 24px rgba(17, 24, 39, .08);
 }
 
-
 /* Kontener główny (layout.ejs) */
 main {
     max-width: 1100px;
@@ -35,7 +34,7 @@ main {
     padding: 16px 16px 48px;
 }
 
-/* ---------- NAV (layout.ejs) ---------- */
+/* ---------- NAWIGACJA (layout.ejs) ---------- */
 header { padding: 12px; }
 nav.appbar {
     display: flex; justify-content: space-between; align-items: center;
@@ -62,12 +61,12 @@ nav.appbar {
 }
 .btn-outline:hover { background: rgba(109,40,217,.08); }
 
-/* ---------- FLASH (layout.ejs) ---------- */
+/* ---------- KOMUNIKATY FLASH (layout.ejs) ---------- */
 .flash { margin: 16px 0; padding: 12px 14px; border-radius: 10px; border: 1px solid var(--border); }
 .flash.success { background: rgba(22,163,74,.08); color: #065f46; border-color: rgba(22,163,74,.2); }
 .flash.error   { background: rgba(225,29,72,.08); color: #7f1d1d; border-color: rgba(225,29,72,.2); }
 
-/* ---------- FORMULARZE (login/register wyszukiwarka) ---------- */
+/* ---------- FORMULARZE (login / rejestracja / wyszukiwarka) ---------- */
 form { display: grid; gap: 12px; }
 
 /* Ujednolicone pola formularzy (także number – np. kalkulator podatkowy) */
@@ -97,7 +96,7 @@ input:focus, select:focus { border-color: var(--brand); box-shadow: 0 0 0 4px rg
 .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 .form-actions { display: flex; gap: 10px; align-items: center; }
 
-/* ---------- INDEX: wyszukiwarka + lista ---------- */
+/* ---------- STRONA GŁÓWNA: wyszukiwarka + lista ---------- */
 .crypto-search {
     display: grid; grid-template-columns: 1fr auto; gap: 12px;
     background: transparent; margin: 18px 0 22px;
@@ -132,7 +131,7 @@ input:focus, select:focus { border-color: var(--brand); box-shadow: 0 0 0 4px rg
 .up { color: var(--ok); font-weight: 600; }
 .down { color: var(--err); font-weight: 600; }
 
-/* ---------- Paginacja ---------- */
+/* ---------- PAGINACJA ---------- */
 .pagination {
     display: flex; gap: 8px; align-items: center; justify-content: center;
     margin: 22px 0 8px;
@@ -149,7 +148,7 @@ input:focus, select:focus { border-color: var(--brand); box-shadow: 0 0 0 4px rg
     box-shadow: 0 6px 14px rgba(109,40,217,.25);
 }
 
-/* ---------- Detale kryptowaluty ---------- */
+/* ---------- SZCZEGÓŁY KRYPTOWALUTY ---------- */
 .coin-header {
     display: flex; align-items: center; gap: 16px; margin: 8px 0 18px;
 }
@@ -160,13 +159,13 @@ input:focus, select:focus { border-color: var(--brand); box-shadow: 0 0 0 4px rg
     border-radius: 16px; padding: 16px; box-shadow: var(--shadow); margin-top: 10px;
 }
 
-/* ---------- Ulubione ---------- */
+/* ---------- ULUBIONE ---------- */
 #fav-list { list-style: none; padding: 0; margin: 12px 0; display: grid; gap: 8px; }
 #fav-list li {
     background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 10px 12px;
 }
 
-/* ---------- Utilities ---------- */
+/* ---------- NARZĘDZIA / POMOCNICZE KLASY ---------- */
 .lead { font-size: 18px; color: var(--muted); }
 .section-title { font-size: 28px; margin: 8px 0 2px; color: black; }
 .muted { color: var(--muted); }
@@ -179,8 +178,8 @@ input:focus, select:focus { border-color: var(--brand); box-shadow: 0 0 0 4px rg
     .crypto-search { grid-template-columns: 1fr; }
 }
 
-/* --- Gwiazdkowe ulubione --- */
-.crypto-card { position: relative; } /* żeby pozycjonować gwiazdkę */
+/* --- Ulubione oznaczone gwiazdką --- */
+.crypto-card { position: relative; } /* aby móc pozycjonować gwiazdkę */
 .star-btn {
     position: absolute; top: 10px; right: 10px;
     width: 34px; height: 34px; border: 1px solid var(--border);
@@ -190,32 +189,32 @@ input:focus, select:focus { border-color: var(--brand); box-shadow: 0 0 0 4px rg
 }
 .star-btn:hover { transform: translateY(-1px); }
 .star-btn svg { width: 18px; height: 18px; fill: #c4c4c4; }
-.star-btn.active svg { fill: #fbbf24; } /* żółty (amber) gdy ulubione */
+.star-btn.active svg { fill: #fbbf24; } /* żółty (amber) gdy element jest w ulubionych */
 
-/* --- Profile form labels: a bit higher & cleaner --- */
+/* --- Etykiety pól formularza profilu: nieco wyżej i czytelniej --- */
 .form-card label {
-    display: inline-block;           /* pewne ułożenie nad inputem */
+    display: inline-block;           /* stabilne ułożenie nad inputem */
     font-size: 14px;
     color: var(--muted);
     margin-bottom: 6px;              /* mały odstęp od pola */
-    transform: translateY(-3px);     /* podniesienie optycznie o 3px */
+    transform: translateY(-3px);     /* optyczne podniesienie o 3px */
 }
 
-/* kolumny wierszy profilu: label nad inputem, bez dodatkowych marginesów */
+/* Kolumny w wierszach profilu: label nad inputem, bez dodatkowych marginesów */
 .form-card .form-row > div {
     display: flex;
     flex-direction: column;
-    gap: 0;                          /* trzymamy odstępy na label/input */
+    gap: 0;                          /* odstępy trzymamy na label/input */
 }
 
-/* trochę „spłaszczone” pole dla lepszego balansu z label */
+/* Nieco „spłaszczone” pole dla lepszego balansu z etykietą */
 .form-card .input {
     padding-top: 9px;
     padding-bottom: 9px;
     line-height: 1.2;
 }
 
-/* --- Nav: user links behave like menu links --- */
+/* --- Nawigacja: linki użytkownika zachowują się jak linki w menu --- */
 .appbar .user a {
     color: inherit;
     opacity: .9;
@@ -237,9 +236,10 @@ input:focus, select:focus { border-color: var(--brand); box-shadow: 0 0 0 4px rg
 
 .btn:hover {
     background: var(--brand-600);
-    color: #fff !important;         /* nadal biały tekst po najechaniu */
+    color: #fff !important;         /* biały tekst również po najechaniu */
 }
-/* Grid layout for listing quizzes on the quizzes page */
+
+/* Układ siatki do wyświetlania quizów na stronie z quizami */
 .quizzes-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
@@ -247,7 +247,7 @@ input:focus, select:focus { border-color: var(--brand); box-shadow: 0 0 0 4px rg
     margin-top: 20px;
 }
 
-/* Individual quiz card styling used in the quizzes listing */
+/* Styl pojedynczej karty quizu na liście quizów */
 .quiz-card {
     display: block;
     background: var(--surface);
@@ -284,7 +284,6 @@ input:focus, select:focus { border-color: var(--brand); box-shadow: 0 0 0 4px rg
 .quiz-form .game-answer {
     margin-top: 14px;
 }
-
 
 /* Mobile */
 @media (max-width: 720px) {
@@ -368,8 +367,8 @@ footer {
     }
 }
 
-/* ----------- Leaderboard styles ----------- */
-/* Grid layout for leaderboard pages */
+/* ----------- Style tabeli wyników (leaderboard) ----------- */
+/* Układ siatki dla stron rankingu */
 .leaderboard-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
@@ -377,7 +376,7 @@ footer {
     margin-top: 30px;
 }
 
-/* Card styling for leaderboard entries */
+/* Styl karty pojedynczego wpisu w rankingu */
 .leaderboard-card {
     margin-top: 10px;
     background: var(--surface);
@@ -405,7 +404,7 @@ footer {
     color: var(--muted);
 }
 
-/* Styling for the active menu link */
+/* Styl aktywnego linku w menu */
 .menu a.active {
     color: var(--brand-700);
     font-weight: 700;
@@ -415,7 +414,7 @@ footer {
    Milionaire – UI
 ======================= */
 
-/* Wrapper for the Millionaire game UI */
+/* Kontener interfejsu gry „Milionerzy” */
 .millionaire-wrapper {
     max-width: 1100px;
     margin: 24px auto 48px;
@@ -427,6 +426,7 @@ footer {
     gap: 18px;
 }
 
+/* Karta bazowa dla elementów gry */
 .millionaire-card {
     background: var(--surface);
     border: 1px solid var(--border);
@@ -436,12 +436,14 @@ footer {
     box-shadow: var(--shadow);
 }
 
+/* Karta z pytaniem (tło z subtelnym gradientem) */
 .millionaire-question-card {
     position: relative;
     overflow: hidden;
     background: radial-gradient(circle at top, rgba(109,40,217,.06), transparent 50%), var(--surface);
 }
 
+/* Karta drabinki nagród */
 .millionaire-ladder-card {
     background: #020617;
     color: #e5e7eb;
@@ -479,7 +481,7 @@ footer {
     color: var(--brand-700);
 }
 
-/* Lifelines */
+/* Koła ratunkowe */
 .millionaire-lifelines {
     display: flex;
     flex-wrap: wrap;
@@ -505,14 +507,14 @@ footer {
     cursor: default;
 }
 
-/* Hints */
+/* Podpowiedzi */
 .millionaire-hint {
     font-size: 14px;
     color: var(--muted);
     margin-bottom: 10px;
 }
 
-/* Question text */
+/* Treść pytania */
 .millionaire-question-text {
     margin: 16px 0 14px;
     padding: 12px 14px;
@@ -521,7 +523,7 @@ footer {
     border: 1px solid rgba(109,40,217,.15);
 }
 
-/* Answers */
+/* Odpowiedzi */
 .millionaire-options {
     display: grid;
     grid-template-columns: 1fr;
@@ -574,7 +576,7 @@ footer {
     flex: 1;
 }
 
-/* Ladder */
+/* Drabinka nagród */
 .millionaire-ladder-card h3 {
     margin: 0 0 8px;
     font-size: 16px;
@@ -604,7 +606,7 @@ footer {
     font-variant-numeric: tabular-nums;
 }
 
-/* Info + actions */
+/* Informacje + akcje */
 .millionaire-info ul {
     padding-left: 18px;
     color: var(--muted);
@@ -634,7 +636,7 @@ footer {
     }
 }
 
-/* Hero image styling for article pages */
+/* Styl obrazka w nagłówku artykułu */
 .article-hero {
     width: 100%;
     max-height: 360px;
@@ -645,7 +647,7 @@ footer {
     background: #0f172a;
 }
 
-/* Container styling for article thumbnails */
+/* Kontener miniatury artykułu */
 .article-card-thumb {
     margin-bottom: 12px;
     border-radius: 12px;
@@ -653,7 +655,7 @@ footer {
     background: radial-gradient(circle at 0 0, #4c1d95, #020617);
 }
 
-/* Styling for images inside article thumbnails */
+/* Obrazek wewnątrz miniatury artykułu */
 .article-card-thumb img {
     width: 100%;
     height: 140px;
@@ -663,7 +665,7 @@ footer {
 
 .form-actions--center { justify-content: center; }
 
-/* Zielony przycisk (np. Kalkulator podatkowy) */
+/* Zielony przycisk (np. kalkulator podatkowy) */
 .btn-success { background: var(--ok); box-shadow: 0 6px 14px rgba(22,163,74,.25); }
 .btn-success:hover { background: #15803d; }
 
@@ -690,15 +692,9 @@ button.btn {
     font-size: 0.92rem;
 }
 
-/* Focus dla zielonego przycisku – bez fioletowej obwódki */
+/* Fokus dla zielonego przycisku – bez fioletowej obwódki */
 .btn-success:focus,
 .btn-success:focus-visible {
     outline: none;
     box-shadow: 0 0 0 3px rgba(22,163,74,.25);
 }
-
-
-
-
-
-

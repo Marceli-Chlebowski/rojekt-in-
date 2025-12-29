@@ -24,16 +24,12 @@
         </div>
 
         <form method="post" action="<%= action %>">
-
-            <!-- TREŚĆ PYTANIA -->
             <div class="admin-form-group">
                 <label class="admin-form-label">Treść pytania:</label>
                 <textarea name="question_text"
                           class="admin-textarea"
                           required><%= question ? question.question_text : '' %></textarea>
             </div>
-
-            <!-- ODPOWIEDZI A/B/C/D -->
             <div class="admin-form-group">
                 <label class="admin-form-label">Odpowiedzi:</label>
 
@@ -75,8 +71,6 @@
                     </div>
                 </div>
             </div>
-
-            <!-- POPRAWNA ODPOWIEDŹ + AKTYWNOŚĆ -->
             <div class="admin-form-group">
                 <div class="form-row">
                     <div>
@@ -101,8 +95,6 @@
                     </div>
                 </div>
             </div>
-
-            <!-- 50/50 -->
             <div class="admin-form-group">
                 <label class="admin-form-label">
                     Koło 50/50 – zaznacz, które odpowiedzi mają zostać UKRYTE
@@ -129,8 +121,6 @@
                     <% }) %>
                 </div>
             </div>
-
-            <!-- OPINIA PUBLICZNA -->
             <div class="admin-form-group">
                 <label class="admin-form-label">
                     Opinia publiczna – procenty dla każdej odpowiedzi (nie muszą sumować się do 100, to tylko podpowiedź).
@@ -176,8 +166,6 @@
                     </div>
                 </div>
             </div>
-
-            <!-- AKCJE -->
             <div class="admin-form-group" style="margin-top: 22px;">
                 <div class="admin-table-actions">
                     <button type="submit" class="admin-btn admin-btn-primary">

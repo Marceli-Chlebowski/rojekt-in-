@@ -3,33 +3,34 @@ const express = require('express');
 const router = express.Router();
 const pool = require('../config/db');
 
-// middleware: wymagamy zalogowania jako ADMIN z bazy (req.session.isAdmin ustawiane przy logowaniu usera)
+// Middleware: wymaga zalogowania i roli administratora (req.session.isAdmin ustawiane przy logowaniu)
 function requireAdmin(req, res, next) {
-    // nie zalogowany
+    // Brak sesji lub brak zalogowanego użytkownika
     if (!req.session || !req.session.user) {
         req.flash('error', 'Musisz być zalogowany');
         return res.redirect('/login'); // alias w app.js przenosi na /auth/login
     }
 
-    // zalogowany, ale nie admin
+    // Użytkownik zalogowany, ale bez uprawnień administratora
     if (!req.session.isAdmin) {
         req.flash('error', 'Brak uprawnień administratora');
         return res.redirect('/');
     }
 
-    next();
+    return next();
 }
 
-/* ---------- LOGOWANIE ---------- */
+/* =========================================================
+   LOGOWANIE / WYLOGOWANIE (ADMIN KORZYSTA ZE STANDARDOWEGO AUTH)
+========================================================= */
 
-// Nie robimy już osobnego logowania do admina.
-// Jeśli ktoś wejdzie na /admin/login → przekieruj na zwykłe logowanie.
+// Admin nie ma osobnego logowania – przekierowanie na standardowe logowanie
 router.get('/login', (req, res) => {
     req.flash('error', 'Zaloguj się kontem administratora');
     return res.redirect('/login');
 });
 
-// To już niepotrzebne – admin loguje się przez /auth/login
+// POST /admin/login nie jest używany – informacja i przekierowanie
 router.post('/login', (req, res) => {
     req.flash('error', 'Logowanie do panelu admina odbywa się przez standardowe logowanie.');
     return res.redirect('/login');
@@ -40,17 +41,20 @@ router.get('/logout', (req, res) => {
     return res.redirect('/auth/logout');
 });
 
-/* ---------- DASHBOARD ---------- */
+/* =========================================================
+   DASHBOARD
+========================================================= */
 
 router.get('/', requireAdmin, async (req, res) => {
     try {
+        // Liczniki do widoku dashboardu
         const [articles] = await pool.query('SELECT COUNT(*) AS cnt FROM articles');
         const [quizzes] = await pool.query('SELECT COUNT(*) AS cnt FROM quizzes');
         const [questions] = await pool.query('SELECT COUNT(*) AS cnt FROM quiz_questions');
         const [millionaire] = await pool.query('SELECT COUNT(*) AS cnt FROM millionaire_questions');
         const [taxRules] = await pool.query('SELECT COUNT(*) AS cnt FROM tax_rules');
 
-        res.render('admin/dashboard', {
+        return res.render('admin/dashboard', {
             articlesCount: articles[0].cnt,
             quizzesCount: quizzes[0].cnt,
             questionsCount: questions[0].cnt,
@@ -59,34 +63,36 @@ router.get('/', requireAdmin, async (req, res) => {
         });
     } catch (err) {
         console.error(err);
-        res.status(500).send('Błąd serwera');
+        return res.status(500).send('Błąd serwera');
     }
 });
 
-/* ---------- ARTYKUŁY (tabela: articles) ---------- */
+/* =========================================================
+   ARTYKUŁY (tabela: articles)
+========================================================= */
 
-// lista artykułów
+// Lista artykułów
 router.get('/articles', requireAdmin, async (req, res) => {
     try {
         const [rows] = await pool.query(
             'SELECT id, title, summary, image_url, created_at FROM articles ORDER BY created_at DESC'
         );
-        res.render('admin/articles_list', { articles: rows });
+        return res.render('admin/articles_list', { articles: rows });
     } catch (err) {
         console.error(err);
-        res.status(500).send('Błąd serwera');
+        return res.status(500).send('Błąd serwera');
     }
 });
 
-// formularz dodawania
+// Formularz dodawania artykułu
 router.get('/articles/new', requireAdmin, (req, res) => {
-    res.render('admin/articles_form', {
+    return res.render('admin/articles_form', {
         article: null,
         action: '/admin/articles/new'
     });
 });
 
-// dodawanie artykułu
+// Zapis nowego artykułu
 router.post('/articles/new', requireAdmin, async (req, res) => {
     const { title, summary, image_url, content } = req.body;
     try {
@@ -95,31 +101,31 @@ router.post('/articles/new', requireAdmin, async (req, res) => {
             [title, summary, image_url || null, content]
         );
         req.flash('success', 'Dodano artykuł');
-        res.redirect('/admin/articles');
+        return res.redirect('/admin/articles');
     } catch (err) {
         console.error(err);
         req.flash('error', 'Błąd zapisu artykułu');
-        res.redirect('/admin/articles');
+        return res.redirect('/admin/articles');
     }
 });
 
-// formularz edycji
+// Formularz edycji artykułu
 router.get('/articles/:id/edit', requireAdmin, async (req, res) => {
     try {
         const [rows] = await pool.query('SELECT * FROM articles WHERE id = ?', [req.params.id]);
         if (!rows.length) return res.redirect('/admin/articles');
 
-        res.render('admin/articles_form', {
+        return res.render('admin/articles_form', {
             article: rows[0],
             action: `/admin/articles/${req.params.id}/edit`
         });
     } catch (err) {
         console.error(err);
-        res.status(500).send('Błąd serwera');
+        return res.status(500).send('Błąd serwera');
     }
 });
 
-// zapis edycji
+// Zapis edycji artykułu
 router.post('/articles/:id/edit', requireAdmin, async (req, res) => {
     const { title, summary, image_url, content } = req.body;
     try {
@@ -128,49 +134,51 @@ router.post('/articles/:id/edit', requireAdmin, async (req, res) => {
             [title, summary, image_url || null, content, req.params.id]
         );
         req.flash('success', 'Zapisano zmiany artykułu');
-        res.redirect('/admin/articles');
+        return res.redirect('/admin/articles');
     } catch (err) {
         console.error(err);
         req.flash('error', 'Błąd zapisu artykułu');
-        res.redirect('/admin/articles');
+        return res.redirect('/admin/articles');
     }
 });
 
-// usuwanie artykułu
+// Usuwanie artykułu
 router.post('/articles/:id/delete', requireAdmin, async (req, res) => {
     try {
         await pool.query('DELETE FROM articles WHERE id = ?', [req.params.id]);
         req.flash('success', 'Usunięto artykuł');
-        res.redirect('/admin/articles');
+        return res.redirect('/admin/articles');
     } catch (err) {
         console.error(err);
         req.flash('error', 'Błąd usuwania artykułu');
-        res.redirect('/admin/articles');
+        return res.redirect('/admin/articles');
     }
 });
 
-/* ---------- QUIZY (tabela: quizzes) ---------- */
+/* =========================================================
+   QUIZY (tabela: quizzes)
+========================================================= */
 
-// lista quizów
+// Lista quizów
 router.get('/quizzes', requireAdmin, async (req, res) => {
     try {
         const [rows] = await pool.query('SELECT * FROM quizzes ORDER BY id DESC');
-        res.render('admin/quizzes_list', { quizzes: rows });
+        return res.render('admin/quizzes_list', { quizzes: rows });
     } catch (err) {
         console.error(err);
-        res.status(500).send('Błąd serwera');
+        return res.status(500).send('Błąd serwera');
     }
 });
 
-// formularz dodawania quizu
+// Formularz dodawania quizu
 router.get('/quizzes/new', requireAdmin, (req, res) => {
-    res.render('admin/quiz_form', {
+    return res.render('admin/quiz_form', {
         quiz: null,
         action: '/admin/quizzes/new'
     });
 });
 
-// dodanie quizu
+// Zapis nowego quizu
 router.post('/quizzes/new', requireAdmin, async (req, res) => {
     const { title, description } = req.body;
     try {
@@ -178,29 +186,30 @@ router.post('/quizzes/new', requireAdmin, async (req, res) => {
             'INSERT INTO quizzes (title, description) VALUES (?, ?)',
             [title, description]
         );
-        res.redirect('/admin/quizzes');
+        return res.redirect('/admin/quizzes');
     } catch (err) {
         console.error(err);
-        res.status(500).send('Błąd zapisu quizu');
+        return res.status(500).send('Błąd zapisu quizu');
     }
 });
 
-// formularz edycji quizu
+// Formularz edycji quizu
 router.get('/quizzes/:id/edit', requireAdmin, async (req, res) => {
     try {
         const [rows] = await pool.query('SELECT * FROM quizzes WHERE id = ?', [req.params.id]);
         if (!rows.length) return res.redirect('/admin/quizzes');
-        res.render('admin/quiz_form', {
+
+        return res.render('admin/quiz_form', {
             quiz: rows[0],
             action: `/admin/quizzes/${req.params.id}/edit`
         });
     } catch (err) {
         console.error(err);
-        res.status(500).send('Błąd serwera');
+        return res.status(500).send('Błąd serwera');
     }
 });
 
-// zapis edycji quizu
+// Zapis edycji quizu
 router.post('/quizzes/:id/edit', requireAdmin, async (req, res) => {
     const { title, description } = req.body;
     try {
@@ -208,27 +217,29 @@ router.post('/quizzes/:id/edit', requireAdmin, async (req, res) => {
             'UPDATE quizzes SET title = ?, description = ? WHERE id = ?',
             [title, description, req.params.id]
         );
-        res.redirect('/admin/quizzes');
+        return res.redirect('/admin/quizzes');
     } catch (err) {
         console.error(err);
-        res.status(500).send('Błąd zapisu quizu');
+        return res.status(500).send('Błąd zapisu quizu');
     }
 });
 
-// usuwanie quizu
+// Usuwanie quizu
 router.post('/quizzes/:id/delete', requireAdmin, async (req, res) => {
     try {
         await pool.query('DELETE FROM quizzes WHERE id = ?', [req.params.id]);
-        res.redirect('/admin/quizzes');
+        return res.redirect('/admin/quizzes');
     } catch (err) {
         console.error(err);
-        res.status(500).send('Błąd usuwania quizu');
+        return res.status(500).send('Błąd usuwania quizu');
     }
 });
 
-/* ---------- PYTANIA (tabela: quiz_questions) ---------- */
+/* =========================================================
+   PYTANIA (tabela: quiz_questions)
+========================================================= */
 
-// lista pytań dla danego quizu
+// Lista pytań dla danego quizu
 router.get('/quizzes/:quizId/questions', requireAdmin, async (req, res) => {
     const quizId = req.params.quizId;
     try {
@@ -237,40 +248,39 @@ router.get('/quizzes/:quizId/questions', requireAdmin, async (req, res) => {
             'SELECT * FROM quiz_questions WHERE quiz_id = ? ORDER BY id ASC',
             [quizId]
         );
-        res.render('admin/questions_list', { quiz, questions });
+        return res.render('admin/questions_list', { quiz, questions });
     } catch (err) {
         console.error(err);
-        res.status(500).send('Błąd serwera');
+        return res.status(500).send('Błąd serwera');
     }
 });
 
-// formularz dodawania pytania
+// Formularz dodawania pytania do quizu
 router.get('/quizzes/:quizId/questions/new', requireAdmin, async (req, res) => {
     const quizId = req.params.quizId;
     try {
         const [[quiz]] = await pool.query('SELECT * FROM quizzes WHERE id = ?', [quizId]);
-        res.render('admin/question_form', {
+        return res.render('admin/question_form', {
             quiz,
             question: null,
             action: `/admin/quizzes/${quizId}/questions/new`
         });
     } catch (err) {
         console.error(err);
-        res.status(500).send('Błąd serwera');
+        return res.status(500).send('Błąd serwera');
     }
 });
 
-// dodanie pytania
+// Zapis nowego pytania do quizu
 router.post('/quizzes/:quizId/questions/new', requireAdmin, async (req, res) => {
     const quizId = req.params.quizId;
     const { question_text, opt_a, opt_b, opt_c, opt_d, correct_opt, level } = req.body;
 
-    // Walidacja: 4 odpowiedzi + jedna poprawna
+    // Walidacja: wymagane 4 odpowiedzi oraz jedna poprawna
     if (!question_text || !opt_a || !opt_b || !opt_c || !opt_d) {
         req.flash('error', 'Musisz podać treść pytania oraz 4 odpowiedzi.');
         return res.redirect(`/admin/quizzes/${quizId}/questions/new`);
     }
-
     if (!['A', 'B', 'C', 'D'].includes(correct_opt)) {
         req.flash('error', 'Musisz wskazać jedną poprawną odpowiedź (A–D).');
         return res.redirect(`/admin/quizzes/${quizId}/questions/new`);
@@ -283,114 +293,104 @@ router.post('/quizzes/:quizId/questions/new', requireAdmin, async (req, res) => 
              VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
             [quizId, question_text, opt_a, opt_b, opt_c, opt_d, correct_opt, Number(level) || 1]
         );
-        res.redirect(`/admin/quizzes/${quizId}/questions`);
+        return res.redirect(`/admin/quizzes/${quizId}/questions`);
     } catch (err) {
         console.error(err);
-        res.status(500).send('Błąd zapisu pytania');
+        return res.status(500).send('Błąd zapisu pytania');
     }
 });
 
-// formularz edycji pytania
+// Formularz edycji pytania (po ID pytania)
 router.get('/questions/:id/edit', requireAdmin, async (req, res) => {
     try {
-        const [[question]] = await pool.query(
-            'SELECT * FROM quiz_questions WHERE id = ?',
-            [req.params.id]
-        );
+        const [[question]] = await pool.query('SELECT * FROM quiz_questions WHERE id = ?', [req.params.id]);
         if (!question) return res.redirect('/admin');
 
         const [[quiz]] = await pool.query('SELECT * FROM quizzes WHERE id = ?', [question.quiz_id]);
 
-        res.render('admin/question_form', {
+        return res.render('admin/question_form', {
             quiz,
             question,
             action: `/admin/questions/${question.id}/edit`
         });
     } catch (err) {
         console.error(err);
-        res.status(500).send('Błąd serwera');
+        return res.status(500).send('Błąd serwera');
     }
 });
 
-// zapis edycji pytania
+// Zapis edycji pytania
 router.post('/questions/:id/edit', requireAdmin, async (req, res) => {
     const { question_text, opt_a, opt_b, opt_c, opt_d, correct_opt, level } = req.body;
 
-    // Walidacja: 4 odpowiedzi + jedna poprawna
+    // Walidacja: wymagane 4 odpowiedzi oraz jedna poprawna
     if (!question_text || !opt_a || !opt_b || !opt_c || !opt_d) {
         req.flash('error', 'Musisz podać treść pytania oraz komplet 4 odpowiedzi.');
         return res.redirect(`/admin/questions/${req.params.id}/edit`);
     }
-
     if (!['A', 'B', 'C', 'D'].includes(correct_opt)) {
         req.flash('error', 'Musisz wskazać jedną poprawną odpowiedź (A–D).');
         return res.redirect(`/admin/questions/${req.params.id}/edit`);
     }
 
     try {
-        const [[oldQuestion]] = await pool.query(
-            'SELECT quiz_id FROM quiz_questions WHERE id = ?',
-            [req.params.id]
-        );
+        // Pobranie quiz_id, żeby wrócić do listy pytań danego quizu
+        const [[oldQuestion]] = await pool.query('SELECT quiz_id FROM quiz_questions WHERE id = ?', [req.params.id]);
 
         await pool.query(
             `UPDATE quiz_questions SET
-                                       question_text = ?,
-                                       opt_a = ?,
-                                       opt_b = ?,
-                                       opt_c = ?,
-                                       opt_d = ?,
-                                       correct_opt = ?,
-                                       level = ?
+                question_text = ?,
+                opt_a = ?,
+                opt_b = ?,
+                opt_c = ?,
+                opt_d = ?,
+                correct_opt = ?,
+                level = ?
              WHERE id = ?`,
             [question_text, opt_a, opt_b, opt_c, opt_d, correct_opt, Number(level) || 1, req.params.id]
         );
 
-        res.redirect(`/admin/quizzes/${oldQuestion.quiz_id}/questions`);
+        return res.redirect(`/admin/quizzes/${oldQuestion.quiz_id}/questions`);
     } catch (err) {
         console.error(err);
-        res.status(500).send('Błąd zapisu pytania');
+        return res.status(500).send('Błąd zapisu pytania');
     }
 });
 
-// usuwanie pytania
+// Usuwanie pytania
 router.post('/questions/:id/delete', requireAdmin, async (req, res) => {
     try {
-        const [[oldQuestion]] = await pool.query(
-            'SELECT quiz_id FROM quiz_questions WHERE id = ?',
-            [req.params.id]
-        );
+        // Pobranie quiz_id, żeby wrócić do listy pytań danego quizu
+        const [[oldQuestion]] = await pool.query('SELECT quiz_id FROM quiz_questions WHERE id = ?', [req.params.id]);
 
         await pool.query('DELETE FROM quiz_questions WHERE id = ?', [req.params.id]);
 
-        res.redirect(`/admin/quizzes/${oldQuestion.quiz_id}/questions`);
+        return res.redirect(`/admin/quizzes/${oldQuestion.quiz_id}/questions`);
     } catch (err) {
         console.error(err);
-        res.status(500).send('Błąd usuwania pytania');
+        return res.status(500).send('Błąd usuwania pytania');
     }
 });
 
-// ============================
-//  ADMIN – MILLIONAIRE QUIZ
-// ============================
+/* =========================================================
+   MILIONERZY (tabele: millionaire_questions, millionaire_hints)
+========================================================= */
 
-// Lista pytań
+// Lista pytań Milionerów
 router.get('/millionaire/questions', requireAdmin, async (req, res) => {
     try {
-        const [questions] = await pool.query(
-            'SELECT * FROM millionaire_questions ORDER BY id DESC'
-        );
-        res.render('admin/millionaire_questions_list', { questions });
+        const [questions] = await pool.query('SELECT * FROM millionaire_questions ORDER BY id DESC');
+        return res.render('admin/millionaire_questions_list', { questions });
     } catch (err) {
         console.error(err);
         req.flash('error', 'Nie udało się pobrać pytań Milionerów');
-        res.redirect('/admin');
+        return res.redirect('/admin');
     }
 });
 
-// Formularz dodawania nowego pytania
+// Formularz dodawania pytania Milionerów
 router.get('/millionaire/questions/new', requireAdmin, (req, res) => {
-    res.render('admin/millionaire_question_form', {
+    return res.render('admin/millionaire_question_form', {
         question: null,
         fifty: null,
         audience: null,
@@ -398,7 +398,7 @@ router.get('/millionaire/questions/new', requireAdmin, (req, res) => {
     });
 });
 
-// Zapis nowego pytania + 50/50 + Audience
+// Zapis nowego pytania + podpowiedzi (50/50 i publiczność)
 router.post('/millionaire/questions/new', requireAdmin, async (req, res) => {
     const {
         question_text, opt_a, opt_b, opt_c, opt_d, correct_opt, is_active,
@@ -406,12 +406,11 @@ router.post('/millionaire/questions/new', requireAdmin, async (req, res) => {
         perc_a, perc_b, perc_c, perc_d
     } = req.body;
 
-    // Walidacja: 4 odpowiedzi + jedna poprawna
+    // Walidacja: wymagane 4 odpowiedzi oraz jedna poprawna
     if (!question_text || !opt_a || !opt_b || !opt_c || !opt_d) {
         req.flash('error', 'Pytanie musi zawierać dokładnie 4 odpowiedzi.');
         return res.redirect('/admin/millionaire/questions/new');
     }
-
     if (!['A', 'B', 'C', 'D'].includes(correct_opt)) {
         req.flash('error', 'Musisz wskazać jedną poprawną odpowiedź (A–D).');
         return res.redirect('/admin/millionaire/questions/new');
@@ -420,60 +419,57 @@ router.post('/millionaire/questions/new', requireAdmin, async (req, res) => {
     const active = is_active === 'on' ? 1 : 0;
 
     try {
+        // 1) Zapis pytania
         const [result] = await pool.query(
             `INSERT INTO millionaire_questions
-                 (question_text, opt_a, opt_b, opt_c, opt_d, correct_opt, is_active)
+             (question_text, opt_a, opt_b, opt_c, opt_d, correct_opt, is_active)
              VALUES (?, ?, ?, ?, ?, ?, ?)`,
             [question_text, opt_a, opt_b, opt_c, opt_d, correct_opt, active]
         );
 
         const qId = result.insertId;
 
+        // 2) Podpowiedź 50/50 – nie pozwalamy ukryć poprawnej odpowiedzi
         const hide = { A: hide_a ? 1 : 0, B: hide_b ? 1 : 0, C: hide_c ? 1 : 0, D: hide_d ? 1 : 0 };
         hide[correct_opt] = 0;
 
         await pool.query(
             `INSERT INTO millionaire_hints
-                 (question_id, hint_type, hide_a, hide_b, hide_c, hide_d)
+             (question_id, hint_type, hide_a, hide_b, hide_c, hide_d)
              VALUES (?, 'FIFTY', ?, ?, ?, ?)`,
             [qId, hide.A, hide.B, hide.C, hide.D]
         );
 
+        // 3) Podpowiedź „Publiczność”
         await pool.query(
             `INSERT INTO millionaire_hints
-                 (question_id, hint_type, perc_a, perc_b, perc_c, perc_d)
+             (question_id, hint_type, perc_a, perc_b, perc_c, perc_d)
              VALUES (?, 'AUDIENCE', ?, ?, ?, ?)`,
             [qId, perc_a || null, perc_b || null, perc_c || null, perc_d || null]
         );
 
         req.flash('success', 'Dodano pytanie Milionerów');
-        res.redirect('/admin/millionaire/questions');
+        return res.redirect('/admin/millionaire/questions');
     } catch (err) {
         console.error(err);
         req.flash('error', 'Błąd podczas zapisu pytania Milionerów');
-        res.redirect('/admin/millionaire/questions');
+        return res.redirect('/admin/millionaire/questions');
     }
 });
 
-// Formularz edycji pytania
+// Formularz edycji pytania Milionerów
 router.get('/millionaire/questions/:id/edit', requireAdmin, async (req, res) => {
     const id = req.params.id;
 
     try {
-        const [[question]] = await pool.query(
-            'SELECT * FROM millionaire_questions WHERE id = ?',
-            [id]
-        );
-
+        const [[question]] = await pool.query('SELECT * FROM millionaire_questions WHERE id = ?', [id]);
         if (!question) {
             req.flash('error', 'Nie znaleziono pytania');
             return res.redirect('/admin/millionaire/questions');
         }
 
-        const [hints] = await pool.query(
-            'SELECT * FROM millionaire_hints WHERE question_id = ?',
-            [id]
-        );
+        // Pobranie podpowiedzi (50/50 i publiczność)
+        const [hints] = await pool.query('SELECT * FROM millionaire_hints WHERE question_id = ?', [id]);
 
         let fifty = null;
         let audience = null;
@@ -482,7 +478,7 @@ router.get('/millionaire/questions/:id/edit', requireAdmin, async (req, res) => 
             if (h.hint_type === 'AUDIENCE') audience = h;
         });
 
-        res.render('admin/millionaire_question_form', {
+        return res.render('admin/millionaire_question_form', {
             question,
             fifty,
             audience,
@@ -491,11 +487,11 @@ router.get('/millionaire/questions/:id/edit', requireAdmin, async (req, res) => 
     } catch (err) {
         console.error(err);
         req.flash('error', 'Błąd pobierania pytania Milionerów');
-        res.redirect('/admin/millionaire/questions');
+        return res.redirect('/admin/millionaire/questions');
     }
 });
 
-// Zapis edycji pytania + 50/50 + Audience
+// Zapis edycji pytania + podpowiedzi (50/50 i publiczność)
 router.post('/millionaire/questions/:id/edit', requireAdmin, async (req, res) => {
     const id = req.params.id;
 
@@ -505,12 +501,11 @@ router.post('/millionaire/questions/:id/edit', requireAdmin, async (req, res) =>
         perc_a, perc_b, perc_c, perc_d
     } = req.body;
 
-    // Walidacja: 4 odpowiedzi + jedna poprawna
+    // Walidacja: wymagane 4 odpowiedzi oraz jedna poprawna
     if (!question_text || !opt_a || !opt_b || !opt_c || !opt_d) {
         req.flash('error', 'Pytanie musi zawierać komplet 4 odpowiedzi.');
         return res.redirect(`/admin/millionaire/questions/${id}/edit`);
     }
-
     if (!['A', 'B', 'C', 'D'].includes(correct_opt)) {
         req.flash('error', 'Musisz wskazać jedną poprawną odpowiedź (A–D).');
         return res.redirect(`/admin/millionaire/questions/${id}/edit`);
@@ -519,6 +514,7 @@ router.post('/millionaire/questions/:id/edit', requireAdmin, async (req, res) =>
     const active = is_active === 'on' ? 1 : 0;
 
     try {
+        // 1) Aktualizacja pytania
         await pool.query(
             `UPDATE millionaire_questions
              SET question_text = ?, opt_a = ?, opt_b = ?, opt_c = ?, opt_d = ?, correct_opt = ?, is_active = ?
@@ -526,48 +522,48 @@ router.post('/millionaire/questions/:id/edit', requireAdmin, async (req, res) =>
             [question_text, opt_a, opt_b, opt_c, opt_d, correct_opt, active, id]
         );
 
+        // 2) Aktualizacja 50/50 – nie pozwalamy ukryć poprawnej odpowiedzi
         const hide = { A: hide_a ? 1 : 0, B: hide_b ? 1 : 0, C: hide_c ? 1 : 0, D: hide_d ? 1 : 0 };
         hide[correct_opt] = 0;
 
         await pool.query('DELETE FROM millionaire_hints WHERE question_id = ? AND hint_type = "FIFTY"', [id]);
         await pool.query(
             `INSERT INTO millionaire_hints
-                 (question_id, hint_type, hide_a, hide_b, hide_c, hide_d)
+             (question_id, hint_type, hide_a, hide_b, hide_c, hide_d)
              VALUES (?, 'FIFTY', ?, ?, ?, ?)`,
             [id, hide.A, hide.B, hide.C, hide.D]
         );
 
+        // 3) Aktualizacja „Publiczność”
         await pool.query('DELETE FROM millionaire_hints WHERE question_id = ? AND hint_type = "AUDIENCE"', [id]);
         await pool.query(
             `INSERT INTO millionaire_hints
-                 (question_id, hint_type, perc_a, perc_b, perc_c, perc_d)
+             (question_id, hint_type, perc_a, perc_b, perc_c, perc_d)
              VALUES (?, 'AUDIENCE', ?, ?, ?, ?)`,
             [id, perc_a || null, perc_b || null, perc_c || null, perc_d || null]
         );
 
         req.flash('success', 'Zaktualizowano pytanie Milionerów');
-        res.redirect('/admin/millionaire/questions');
+        return res.redirect('/admin/millionaire/questions');
     } catch (err) {
         console.error(err);
         req.flash('error', 'Błąd podczas aktualizacji pytania Milionerów');
-        res.redirect('/admin/millionaire/questions');
+        return res.redirect('/admin/millionaire/questions');
     }
 });
 
-// Usuwanie pytania Milionerów
+// Usuwanie pytania Milionerów (z kontrolą minimalnej liczby aktywnych)
 router.post('/millionaire/questions/:id/delete', requireAdmin, async (req, res) => {
     const id = req.params.id;
-    try {
-        const [[question]] = await pool.query(
-            'SELECT is_active FROM millionaire_questions WHERE id = ?',
-            [id]
-        );
 
+    try {
+        const [[question]] = await pool.query('SELECT is_active FROM millionaire_questions WHERE id = ?', [id]);
         if (!question) {
             req.flash('error', 'Nie znaleziono pytania');
             return res.redirect('/admin/millionaire/questions');
         }
 
+        // Minimalnie 10 aktywnych pytań – nie pozwalamy zejść poniżej
         const [[{ count: activeCount }]] = await pool.query(
             'SELECT COUNT(*) AS count FROM millionaire_questions WHERE is_active = 1'
         );
@@ -586,19 +582,20 @@ router.post('/millionaire/questions/:id/delete', requireAdmin, async (req, res) 
         console.error(err);
         req.flash('error', 'Błąd podczas usuwania pytania');
     }
-    res.redirect('/admin/millionaire/questions');
+
+    return res.redirect('/admin/millionaire/questions');
 });
 
-/* ---------- KOMENTARZE DO ARTYKUŁÓW (article_comments) ---------- */
+/* =========================================================
+   KOMENTARZE DO ARTYKUŁÓW (tabela: article_comments)
+========================================================= */
 
+// Lista komentarzy do artykułu (moderacja)
 router.get('/articles/:id/comments', requireAdmin, async (req, res) => {
     const articleId = req.params.id;
 
     try {
-        const [[article]] = await pool.query(
-            'SELECT id, title FROM articles WHERE id = ?',
-            [articleId]
-        );
+        const [[article]] = await pool.query('SELECT id, title FROM articles WHERE id = ?', [articleId]);
         if (!article) {
             req.flash('error', 'Nie znaleziono artykułu');
             return res.redirect('/admin/articles');
@@ -607,20 +604,21 @@ router.get('/articles/:id/comments', requireAdmin, async (req, res) => {
         const [comments] = await pool.query(
             `SELECT c.id, c.content, c.created_at, u.username
              FROM article_comments c
-                      JOIN users u ON u.id = c.user_id
+             JOIN users u ON u.id = c.user_id
              WHERE c.article_id = ?
              ORDER BY c.created_at DESC`,
             [articleId]
         );
 
-        res.render('admin/article_comments', { article, comments });
+        return res.render('admin/article_comments', { article, comments });
     } catch (err) {
         console.error(err);
         req.flash('error', 'Błąd pobierania komentarzy');
-        res.redirect('/admin/articles');
+        return res.redirect('/admin/articles');
     }
 });
 
+// Usuwanie komentarza (moderacja)
 router.post('/articles/:articleId/comments/:commentId/delete', requireAdmin, async (req, res) => {
     const { articleId, commentId } = req.params;
 
@@ -635,12 +633,14 @@ router.post('/articles/:articleId/comments/:commentId/delete', requireAdmin, asy
         req.flash('error', 'Błąd podczas usuwania komentarza');
     }
 
-    res.redirect(`/admin/articles/${articleId}/comments`);
+    return res.redirect(`/admin/articles/${articleId}/comments`);
 });
 
-/* ---------- PODATKI (tabela: tax_rules) ---------- */
+/* =========================================================
+   PODATKI (tabela: tax_rules)
+========================================================= */
 
-// lista reguł podatkowych
+// Lista reguł podatkowych
 router.get('/tax-rules', requireAdmin, async (req, res) => {
     try {
         const [rows] = await pool.query(
@@ -648,39 +648,43 @@ router.get('/tax-rules', requireAdmin, async (req, res) => {
              FROM tax_rules
              ORDER BY country_name ASC`
         );
-        res.render('admin/tax_rules_list', { rules: rows });
+        return res.render('admin/tax_rules_list', { rules: rows });
     } catch (err) {
         console.error(err);
         req.flash('error', 'Błąd pobierania reguł podatkowych');
-        res.redirect('/admin');
+        return res.redirect('/admin');
     }
 });
 
-// formularz dodawania
+// Formularz dodawania reguły podatkowej
 router.get('/tax-rules/new', requireAdmin, (req, res) => {
-    res.render('admin/tax_rule_form', {
+    return res.render('admin/tax_rule_form', {
         rule: null,
         action: '/admin/tax-rules/new'
     });
 });
 
-// dodanie
+// Zapis nowej reguły podatkowej
 router.post('/tax-rules/new', requireAdmin, async (req, res) => {
     try {
         let { country_code, country_name, tax_rate, long_term_rate, long_term_days } = req.body;
 
+        // Normalizacja danych wejściowych
         country_code = (country_code || '').trim().toUpperCase();
         country_name = (country_name || '').trim();
 
+        // Walidacja pól wymaganych
         if (!country_code || !country_name || tax_rate === undefined || tax_rate === '') {
             req.flash('error', 'Uzupełnij: kod kraju, nazwę kraju i stawkę podatku.');
             return res.redirect('/admin/tax-rules/new');
         }
 
+        // Konwersje typów
         const taxRate = Number(tax_rate);
         const longRate = (long_term_rate === '' || long_term_rate == null) ? null : Number(long_term_rate);
         const longDays = (long_term_days === '' || long_term_days == null) ? null : parseInt(long_term_days, 10);
 
+        // Walidacja liczb
         if (Number.isNaN(taxRate) || taxRate < 0) {
             req.flash('error', 'Stawka podatku musi być liczbą >= 0.');
             return res.redirect('/admin/tax-rules/new');
@@ -701,15 +705,15 @@ router.post('/tax-rules/new', requireAdmin, async (req, res) => {
         );
 
         req.flash('success', 'Dodano regułę podatkową');
-        res.redirect('/admin/tax-rules');
+        return res.redirect('/admin/tax-rules');
     } catch (err) {
         console.error(err);
         req.flash('error', 'Błąd dodawania reguły podatkowej (sprawdź czy kod kraju nie jest zdublowany)');
-        res.redirect('/admin/tax-rules');
+        return res.redirect('/admin/tax-rules');
     }
 });
 
-// formularz edycji
+// Formularz edycji reguły podatkowej
 router.get('/tax-rules/:id/edit', requireAdmin, async (req, res) => {
     try {
         const [[rule]] = await pool.query(
@@ -723,34 +727,38 @@ router.get('/tax-rules/:id/edit', requireAdmin, async (req, res) => {
             return res.redirect('/admin/tax-rules');
         }
 
-        res.render('admin/tax_rule_form', {
+        return res.render('admin/tax_rule_form', {
             rule,
             action: `/admin/tax-rules/${rule.id}/edit`
         });
     } catch (err) {
         console.error(err);
         req.flash('error', 'Błąd pobierania reguły do edycji');
-        res.redirect('/admin/tax-rules');
+        return res.redirect('/admin/tax-rules');
     }
 });
 
-// zapis edycji
+// Zapis edycji reguły podatkowej
 router.post('/tax-rules/:id/edit', requireAdmin, async (req, res) => {
     try {
         let { country_code, country_name, tax_rate, long_term_rate, long_term_days } = req.body;
 
+        // Normalizacja danych wejściowych
         country_code = (country_code || '').trim().toUpperCase();
         country_name = (country_name || '').trim();
 
+        // Walidacja pól wymaganych
         if (!country_code || !country_name || tax_rate === undefined || tax_rate === '') {
             req.flash('error', 'Uzupełnij: kod kraju, nazwę kraju i stawkę podatku.');
             return res.redirect(`/admin/tax-rules/${req.params.id}/edit`);
         }
 
+        // Konwersje typów
         const taxRate = Number(tax_rate);
         const longRate = (long_term_rate === '' || long_term_rate == null) ? null : Number(long_term_rate);
         const longDays = (long_term_days === '' || long_term_days == null) ? null : parseInt(long_term_days, 10);
 
+        // Walidacja liczb
         if (Number.isNaN(taxRate) || taxRate < 0) {
             req.flash('error', 'Stawka podatku musi być liczbą >= 0.');
             return res.redirect(`/admin/tax-rules/${req.params.id}/edit`);
@@ -764,28 +772,24 @@ router.post('/tax-rules/:id/edit', requireAdmin, async (req, res) => {
         );
 
         req.flash('success', 'Zapisano zmiany reguły podatkowej');
-        res.redirect('/admin/tax-rules');
+        return res.redirect('/admin/tax-rules');
     } catch (err) {
         console.error(err);
         req.flash('error', 'Błąd zapisu zmian reguły podatkowej');
-        res.redirect('/admin/tax-rules');
+        return res.redirect('/admin/tax-rules');
     }
 });
 
-// usuwanie (z blokadą jeśli są obliczenia dla tego kraju)
+// Usuwanie reguły (blokada, jeśli istnieją obliczenia dla kraju)
 router.post('/tax-rules/:id/delete', requireAdmin, async (req, res) => {
     try {
-        const [[rule]] = await pool.query(
-            'SELECT country_code FROM tax_rules WHERE id = ?',
-            [req.params.id]
-        );
-
+        const [[rule]] = await pool.query('SELECT country_code FROM tax_rules WHERE id = ?', [req.params.id]);
         if (!rule) {
             req.flash('error', 'Nie znaleziono reguły podatkowej');
             return res.redirect('/admin/tax-rules');
         }
 
-        // jeśli masz tabelę tax_calculations (u Ciebie jest) – blokujemy usuwanie, jeśli były użycia
+        // Blokujemy usuwanie, jeśli są obliczenia w tax_calculations dla danego kraju
         const [[{ cnt }]] = await pool.query(
             'SELECT COUNT(*) AS cnt FROM tax_calculations WHERE country_code = ?',
             [rule.country_code]
@@ -798,13 +802,12 @@ router.post('/tax-rules/:id/delete', requireAdmin, async (req, res) => {
 
         await pool.query('DELETE FROM tax_rules WHERE id = ?', [req.params.id]);
         req.flash('success', 'Usunięto regułę podatkową');
-        res.redirect('/admin/tax-rules');
+        return res.redirect('/admin/tax-rules');
     } catch (err) {
         console.error(err);
         req.flash('error', 'Błąd usuwania reguły podatkowej');
-        res.redirect('/admin/tax-rules');
+        return res.redirect('/admin/tax-rules');
     }
 });
-
 
 module.exports = router;

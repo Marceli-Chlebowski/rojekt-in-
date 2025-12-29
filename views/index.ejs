@@ -9,7 +9,6 @@
 <div class="crypto-list">
     <% (cryptos || []).forEach(crypto => { %>
         <div class="crypto-card">
-            <!-- ⭐ gwiazdka -->
             <button class="star-btn <%= (favoriteIds || []).includes(crypto.id) ? 'active' : '' %>"
                     data-coin="<%= crypto.id %>" title="Ulubione" aria-label="Ulubione">
                 <svg viewBox="0 0 24 24" aria-hidden="true">
@@ -44,7 +43,6 @@
 </div>
 
 <script>
-    // Sprawdź zalogowanie z layoutu (data-logged-in)
     const isLoggedIn = document.body.dataset.loggedIn === '1';
 
     document.addEventListener('click', async (e) => {
@@ -57,7 +55,7 @@
         }
 
         const coinId = btn.getAttribute('data-coin');
-        btn.classList.toggle('active'); // optymistycznie
+        btn.classList.toggle('active');
 
         try {
             const res = await fetch('/favorites/toggle', {

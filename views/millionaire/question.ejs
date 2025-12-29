@@ -1,6 +1,5 @@
 <div class="millionaire-wrapper">
     <div class="millionaire-layout">
-        <!-- LEWA STRONA – PYTANIE -->
         <div class="millionaire-card millionaire-question-card">
             <div class="millionaire-header-row">
                 <div>
@@ -15,7 +14,6 @@
                 </div>
             </div>
 
-            <!-- KOŁA RATUNKOWE -->
             <div class="millionaire-lifelines">
                 <form method="post" action="/millionaire/lifeline">
                     <input type="hidden" name="type" value="fifty">
@@ -54,12 +52,10 @@
                 <% } %>
             <% } %>
 
-            <!-- PYTANIE -->
             <div class="millionaire-question-text">
                 <%= question.question_text %>
             </div>
 
-            <!-- ODPOWIEDZI -->
             <form method="post" action="/millionaire/answer">
                 <div class="millionaire-options">
                     <% const hidden = hiddenOptions || []; %>
@@ -86,7 +82,6 @@
             </form>
         </div>
 
-        <!-- PRAWA STRONA – DRABINA NAGRÓD -->
         <aside class="millionaire-ladder-card">
             <h3>Drabina nagród</h3>
             <ul class="millionaire-ladder">
